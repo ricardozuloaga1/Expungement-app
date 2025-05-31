@@ -102,7 +102,7 @@ export default function Landing() {
               alt="Professional legal consultant" 
               className="w-full h-full object-cover object-center"
             />
-            <div className="absolute inset-0 bg-gradient-to-l from-transparent via-transparent to-blue-600/10"></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-blue-500/40 to-transparent"></div>
           </div>
         </div>
         
