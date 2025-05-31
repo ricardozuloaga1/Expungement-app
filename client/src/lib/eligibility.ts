@@ -1,11 +1,16 @@
 export interface EligibilityAnalysis {
+  eligibilityStatus: 'automatic_expungement' | 'automatic_sealing' | 'petition_sealing' | 'not_eligible';
   automaticExpungement: boolean;
+  automaticSealing: boolean;
   petitionBasedSealing: boolean;
   eligibilityDetails: {
-    automaticReason?: string;
-    petitionReason?: string;
-    cleanSlateApplicable?: boolean;
+    primaryReason: string;
+    secondaryReasons?: string[];
     mrtaApplicable?: boolean;
+    cleanSlateApplicable?: boolean;
+    petitionApplicable?: boolean;
+    waitingPeriodRequired?: string;
+    excludedOffense?: boolean;
   };
   recommendations: Array<{
     type: string;
@@ -18,118 +23,286 @@ export interface EligibilityAnalysis {
 
 export function analyzeEligibility(questionnaireData: any): EligibilityAnalysis {
   const {
+    // New comprehensive data structure
+    convictionState,
+    hasMarijuanaConviction,
+    offenseType,
+    convictionMonth,
+    convictionYear,
+    possessionAmount,
+    ageAtOffense,
+    receivedNotice,
+    convictionLevel,
+    servedTime,
+    releaseMonth,
+    releaseYear,
+    otherConvictions,
+    onSupervision,
+    hasExcludedOffenses,
+    totalConvictions,
+    totalFelonies,
+    tenYearsPassed,
+    sentenceCompleted,
+    
+    // Legacy fields for backward compatibility
     age,
-    county,
     chargeTypes = [],
     firstArrestDate,
   } = questionnaireData;
 
   let automaticExpungement = false;
+  let automaticSealing = false;
   let petitionBasedSealing = false;
-  const eligibilityDetails: any = {};
+  let eligibilityStatus: 'automatic_expungement' | 'automatic_sealing' | 'petition_sealing' | 'not_eligible' = 'not_eligible';
+  
+  const eligibilityDetails: any = {
+    primaryReason: "",
+    secondaryReasons: []
+  };
   const recommendations: any[] = [];
 
-  // MRTA 2021 Analysis - Automatic Expungement
-  if (firstArrestDate === "before_march_2021") {
-    const hasPossessionCharges = chargeTypes.includes("possession");
-    
-    if (hasPossessionCharges) {
+  // PRIORITY 1: Check for automatic disqualifiers first
+  if (onSupervision === "yes") {
+    eligibilityStatus = 'not_eligible';
+    eligibilityDetails.primaryReason = "Currently on probation or parole - must complete supervision first";
+    recommendations.push({
+      type: "wait",
+      title: "Complete Current Supervision",
+      description: "You must complete all probation or parole requirements before becoming eligible for any relief.",
+      timeline: "Until supervision ends",
+      priority: 1
+    });
+    return buildFinalResult();
+  }
+
+  if (hasExcludedOffenses === "yes") {
+    eligibilityStatus = 'not_eligible';
+    eligibilityDetails.primaryReason = "Conviction for excluded offense (Class A felony or sex offense)";
+    eligibilityDetails.excludedOffense = true;
+    recommendations.push({
+      type: "excluded",
+      title: "Excluded Offense",
+      description: "Class A felonies and sex offenses are permanently excluded from expungement and sealing.",
+      timeline: "Not applicable",
+      priority: 1
+    });
+    return buildFinalResult();
+  }
+
+  if (sentenceCompleted === "no") {
+    eligibilityStatus = 'not_eligible';
+    eligibilityDetails.primaryReason = "Sentence obligations not completed (fines, community service, etc.)";
+    recommendations.push({
+      type: "complete",
+      title: "Complete All Sentence Requirements",
+      description: "You must finish paying all fines, complete community service, and satisfy all other sentence conditions.",
+      timeline: "Complete ASAP",
+      priority: 1
+    });
+    return buildFinalResult();
+  }
+
+  // PRIORITY 2: Check for MRTA Automatic Expungement (Best outcome)
+  if (offenseType === "possession" && possessionAmount === "yes") {
+    // Possession of 3 ounces or less
+    const convictionDate = getConvictionDate(convictionMonth, convictionYear);
+    if (convictionDate && convictionDate < new Date('2021-03-31')) {
       automaticExpungement = true;
-      eligibilityDetails.automaticReason = "MRTA 2021 - Possession charges before March 31, 2021 qualify for automatic expungement";
+      eligibilityStatus = 'automatic_expungement';
+      eligibilityDetails.primaryReason = "Eligible for automatic expungement under MRTA 2021";
       eligibilityDetails.mrtaApplicable = true;
       
+      if (receivedNotice === "yes") {
+        eligibilityDetails.secondaryReasons?.push("Already received court notice of expungement");
+      } else {
+        eligibilityDetails.secondaryReasons?.push("May need to verify expungement status with court");
+      }
+      
       recommendations.push({
-        type: "automatic",
-        title: "Monitor Automatic Expungement Status",
-        description: "Your possession charges should be automatically expunged. Check with the court clerk's office in 3-6 months for status updates.",
-        timeline: "3-6 months",
+        type: "verify",
+        title: "Verify Automatic Expungement Status",
+        description: "Your record should already be expunged. Contact the court clerk to confirm and obtain documentation.",
+        timeline: "1-2 weeks",
         priority: 1
       });
+      return buildFinalResult();
     }
   }
 
-  // Clean Slate Act 2024 Analysis
-  if (firstArrestDate === "before_march_2021" || firstArrestDate === "after_march_2021") {
+  // PRIORITY 3: Check for Clean Slate Act Automatic Sealing
+  const yearsPassedSince = calculateYearsSinceConviction(convictionMonth, convictionYear, releaseMonth, releaseYear, servedTime);
+  
+  if (convictionLevel === "misdemeanor" && yearsPassedSince >= 3 && otherConvictions === "no") {
+    automaticSealing = true;
+    eligibilityStatus = 'automatic_sealing';
+    eligibilityDetails.primaryReason = "Eligible for automatic sealing under Clean Slate Act (misdemeanor, 3+ years)";
     eligibilityDetails.cleanSlateApplicable = true;
+    
+    recommendations.push({
+      type: "automatic_sealing",
+      title: "Monitor Clean Slate Implementation",
+      description: "Your record will be automatically sealed starting November 2024. No action required on your part.",
+      timeline: "November 2024",
+      priority: 1
+    });
+    return buildFinalResult();
+  }
+  
+  if (convictionLevel === "felony" && yearsPassedSince >= 8 && otherConvictions === "no") {
+    automaticSealing = true;
+    eligibilityStatus = 'automatic_sealing';
+    eligibilityDetails.primaryReason = "Eligible for automatic sealing under Clean Slate Act (felony, 8+ years)";
+    eligibilityDetails.cleanSlateApplicable = true;
+    
+    recommendations.push({
+      type: "automatic_sealing",
+      title: "Monitor Clean Slate Implementation",
+      description: "Your record will be automatically sealed starting November 2024. No action required on your part.",
+      timeline: "November 2024", 
+      priority: 1
+    });
+    return buildFinalResult();
   }
 
-  // Petition-Based Sealing Analysis
-  const hasSaleCharges = chargeTypes.includes("sale");
-  const hasCultivationCharges = chargeTypes.includes("cultivation");
-  const hasOtherCharges = chargeTypes.includes("other");
-
-  if (hasSaleCharges || hasCultivationCharges || hasOtherCharges) {
+  // PRIORITY 4: Check for Petition-Based Sealing (CPL § 160.59)
+  if (tenYearsPassed === "yes" && 
+      parseInt(totalConvictions || "0") <= 2 && 
+      parseInt(totalFelonies || "0") <= 1) {
+    
     petitionBasedSealing = true;
-    eligibilityDetails.petitionReason = "Sale, cultivation, or other marijuana charges require petition-based sealing";
+    eligibilityStatus = 'petition_sealing';
+    eligibilityDetails.primaryReason = "Eligible for petition-based sealing under CPL § 160.59";
+    eligibilityDetails.petitionApplicable = true;
     
     recommendations.push({
       type: "petition",
-      title: "File Petition for Record Sealing",
-      description: "Sale, cultivation, and certain other charges require a formal petition to the court for sealing.",
+      title: "File Court Petition for Record Sealing",
+      description: "You can petition the court for record sealing. This requires a formal application and court approval.",
       timeline: "6-12 months",
-      priority: 2
+      priority: 1
     });
-  }
-
-  // Universal Recommendations
-  recommendations.push({
-    type: "report",
-    title: "Download Your Complete Eligibility Report",
-    description: "Get a detailed analysis of your eligibility with legal citations, timelines, and next steps.",
-    timeline: "Immediate",
-    priority: 0
-  });
-
-  if (petitionBasedSealing) {
+    
     recommendations.push({
       type: "legal_help",
-      title: "Consider Professional Legal Assistance",
-      description: "For petition-based cases, legal assistance can help ensure proper filing and increase success rates.",
-      timeline: "Varies",
-      priority: 3
+      title: "Consider Legal Assistance", 
+      description: "Petition-based sealing has specific requirements. Legal help can improve your chances of success.",
+      timeline: "Before filing",
+      priority: 2
     });
+    return buildFinalResult();
   }
 
-  // Age-specific considerations
-  if (age === "under_21") {
+  // PRIORITY 5: Not Currently Eligible
+  eligibilityStatus = 'not_eligible';
+  
+  // Determine specific reason for ineligibility
+  if (convictionLevel === "misdemeanor" && yearsPassedSince < 3) {
+    const yearsRemaining = 3 - yearsPassedSince;
+    eligibilityDetails.primaryReason = `Not enough time has passed for Clean Slate sealing (need ${yearsRemaining.toFixed(1)} more years)`;
+    eligibilityDetails.waitingPeriodRequired = `${Math.ceil(yearsRemaining)} years`;
+  } else if (convictionLevel === "felony" && yearsPassedSince < 8) {
+    const yearsRemaining = 8 - yearsPassedSince;
+    eligibilityDetails.primaryReason = `Not enough time has passed for Clean Slate sealing (need ${yearsRemaining.toFixed(1)} more years)`;
+    eligibilityDetails.waitingPeriodRequired = `${Math.ceil(yearsRemaining)} years`;
+  } else if (otherConvictions === "yes") {
+    eligibilityDetails.primaryReason = "Additional convictions prevent automatic sealing";
+  } else if (parseInt(totalConvictions || "0") > 2) {
+    eligibilityDetails.primaryReason = "Too many total convictions for petition-based sealing (maximum 2)";
+  } else if (tenYearsPassed === "no") {
+    eligibilityDetails.primaryReason = "Less than 10 years have passed since conviction for petition-based sealing";
+  } else {
+    eligibilityDetails.primaryReason = "Does not meet current eligibility criteria for any relief pathway";
+  }
+
+  recommendations.push({
+    type: "future",
+    title: "Check Eligibility Again Later",
+    description: "Your eligibility may change over time as laws evolve and waiting periods are satisfied.",
+    timeline: eligibilityDetails.waitingPeriodRequired || "Periodically",
+    priority: 1
+  });
+
+  function buildFinalResult(): EligibilityAnalysis {
+    // Add universal recommendations
     recommendations.push({
-      type: "youth",
-      title: "Special Provisions for Youth Offenses",
-      description: "Additional protections may apply to offenses committed as a minor. Consider consulting with a youth advocacy specialist.",
-      timeline: "Varies",
-      priority: 4
+      type: "report",
+      title: "Download Complete Analysis Report",
+      description: "Get detailed documentation of your eligibility status with legal citations and next steps.",
+      timeline: "Immediate",
+      priority: 0
     });
+
+    recommendations.sort((a, b) => a.priority - b.priority);
+
+    return {
+      eligibilityStatus,
+      automaticExpungement,
+      automaticSealing,
+      petitionBasedSealing,
+      eligibilityDetails,
+      recommendations
+    };
   }
 
-  // Sort recommendations by priority
-  recommendations.sort((a, b) => a.priority - b.priority);
+  return buildFinalResult();
+}
 
-  return {
-    automaticExpungement,
-    petitionBasedSealing,
-    eligibilityDetails,
-    recommendations
-  };
+// Helper functions
+function getConvictionDate(month?: string, year?: string): Date | null {
+  if (!month || !year) return null;
+  return new Date(parseInt(year), parseInt(month) - 1);
+}
+
+function calculateYearsSinceConviction(
+  convictionMonth?: string, 
+  convictionYear?: string,
+  releaseMonth?: string,
+  releaseYear?: string,
+  servedTime?: string
+): number {
+  const now = new Date();
+  
+  // If they served time, calculate from release date
+  if (servedTime === "yes" && releaseMonth && releaseYear) {
+    const releaseDate = new Date(parseInt(releaseYear), parseInt(releaseMonth) - 1);
+    return (now.getTime() - releaseDate.getTime()) / (365.25 * 24 * 60 * 60 * 1000);
+  }
+  
+  // Otherwise calculate from conviction date
+  if (convictionMonth && convictionYear) {
+    const convictionDate = new Date(parseInt(convictionYear), parseInt(convictionMonth) - 1);
+    return (now.getTime() - convictionDate.getTime()) / (365.25 * 24 * 60 * 60 * 1000);
+  }
+  
+  return 0;
 }
 
 export function formatEligibilityForDisplay(analysis: EligibilityAnalysis) {
-  const { automaticExpungement, petitionBasedSealing } = analysis;
+  const { eligibilityStatus, eligibilityDetails } = analysis;
   
-  let statusTitle = "Mixed Results";
-  let statusDescription = "You may qualify for some relief";
+  let statusTitle = "";
+  let statusDescription = "";
   
-  if (automaticExpungement && !petitionBasedSealing) {
-    statusTitle = "Great news!";
-    statusDescription = "You appear to qualify for automatic expungement";
-  } else if (!automaticExpungement && petitionBasedSealing) {
-    statusTitle = "Good news!";
-    statusDescription = "You appear to qualify for petition-based sealing";
-  } else if (automaticExpungement && petitionBasedSealing) {
-    statusTitle = "Excellent news!";
-    statusDescription = "You qualify for both automatic and petition-based relief";
-  } else {
-    statusTitle = "Limited Options";
-    statusDescription = "You may have limited expungement options";
+  switch (eligibilityStatus) {
+    case 'automatic_expungement':
+      statusTitle = "Excellent News!";
+      statusDescription = "You qualify for automatic expungement - your record should already be cleared";
+      break;
+    case 'automatic_sealing':
+      statusTitle = "Great News!";
+      statusDescription = "You qualify for automatic record sealing under the Clean Slate Act";
+      break;
+    case 'petition_sealing':
+      statusTitle = "Good News!";
+      statusDescription = "You can petition the court for record sealing";
+      break;
+    case 'not_eligible':
+      statusTitle = "Not Currently Eligible";
+      statusDescription = eligibilityDetails.primaryReason || "You don't currently qualify for relief";
+      break;
+    default:
+      statusTitle = "Assessment Incomplete";
+      statusDescription = "Unable to determine eligibility status";
   }
   
   return { statusTitle, statusDescription };
