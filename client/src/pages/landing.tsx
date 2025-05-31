@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { AuthModal } from "@/components/auth-modal";
 import { Shield, Clock, Award, Play, Info, Lock } from "lucide-react";
+import professionalAttorneyImg from "@assets/IMG_0075.png";
 
 export default function Landing() {
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -106,74 +107,21 @@ export default function Landing() {
               </div>
             </div>
             
-            {/* Hero Illustration */}
+            {/* Professional Attorney Image */}
             <div className="hidden lg:block">
-              <div className="bg-white/10 backdrop-blur-sm rounded-2xl shadow-2xl p-8 border border-white/20">
-                <div className="text-center">
-                  {/* Legal Justice SVG Illustration */}
-                  <div className="mx-auto mb-6">
-                    <svg width="200" height="160" viewBox="0 0 200 160" className="mx-auto">
-                      {/* Scales of Justice */}
-                      <g fill="white" opacity="0.9">
-                        {/* Base */}
-                        <rect x="95" y="130" width="10" height="20" />
-                        <rect x="80" y="145" width="40" height="5" />
-                        
-                        {/* Pole */}
-                        <rect x="98" y="30" width="4" height="100" />
-                        
-                        {/* Cross beam */}
-                        <rect x="70" y="45" width="60" height="3" />
-                        
-                        {/* Left scale */}
-                        <ellipse cx="80" cy="60" rx="15" ry="3" />
-                        <line x1="80" y1="48" x2="65" y2="57" stroke="white" strokeWidth="1"/>
-                        <line x1="80" y1="48" x2="95" y2="57" stroke="white" strokeWidth="1"/>
-                        <ellipse cx="80" cy="65" rx="12" ry="2" opacity="0.7" />
-                        
-                        {/* Right scale */}
-                        <ellipse cx="120" cy="60" rx="15" ry="3" />
-                        <line x1="120" y1="48" x2="105" y2="57" stroke="white" strokeWidth="1"/>
-                        <line x1="120" y1="48" x2="135" y2="57" stroke="white" strokeWidth="1"/>
-                        <ellipse cx="120" cy="65" rx="12" ry="2" opacity="0.7" />
-                        
-                        {/* Documents on scales */}
-                        <rect x="74" y="55" width="12" height="8" opacity="0.8" />
-                        <rect x="114" y="55" width="12" height="8" opacity="0.8" />
-                        
-                        {/* Gavel */}
-                        <g transform="translate(40, 90)">
-                          <rect x="0" y="15" width="20" height="6" rx="3" />
-                          <rect x="18" y="0" width="4" height="30" />
-                          <circle cx="22" cy="35" r="3" />
-                        </g>
-                        
-                        {/* Law book */}
-                        <g transform="translate(140, 95)">
-                          <rect x="0" y="0" width="25" height="18" rx="2" />
-                          <rect x="2" y="2" width="21" height="14" fill="rgba(255,255,255,0.3)" />
-                          <line x1="5" y1="6" x2="20" y2="6" stroke="rgba(255,255,255,0.5)" strokeWidth="1"/>
-                          <line x1="5" y1="9" x2="18" y2="9" stroke="rgba(255,255,255,0.5)" strokeWidth="1"/>
-                          <line x1="5" y1="12" x2="20" y2="12" stroke="rgba(255,255,255,0.5)" strokeWidth="1"/>
-                        </g>
-                      </g>
-                    </svg>
-                  </div>
-                  
-                  <h3 className="text-2xl font-bold text-white mb-4">Professional Legal Guidance</h3>
-                  <p className="text-blue-100 mb-6">
-                    Built with input from New York attorneys and based on current state laws. 
-                    Your information is handled with complete confidentiality.
-                  </p>
-                  <div className="grid grid-cols-1 gap-4 text-sm text-blue-100">
-                    <div className="flex items-center justify-center">
-                      <Lock className="w-4 h-4 mr-2" />
-                      <span>Secure & Encrypted</span>
-                    </div>
-                    <div className="flex items-center justify-center">
-                      <Shield className="w-4 h-4 mr-2" />
-                      <span>Attorney Reviewed</span>
-                    </div>
+              <div className="relative">
+                <img 
+                  src={professionalAttorneyImg}
+                  alt="Professional legal consultant" 
+                  className="rounded-2xl shadow-2xl w-full h-auto object-cover max-w-lg mx-auto"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent rounded-2xl"></div>
+                <div className="absolute bottom-6 left-6 right-6 text-white">
+                  <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
+                    <h4 className="font-semibold mb-2">Professional Legal Guidance</h4>
+                    <p className="text-sm text-blue-100">
+                      Attorney-reviewed process based on current NY state laws
+                    </p>
                   </div>
                 </div>
               </div>
