@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { AuthModal } from "@/components/auth-modal";
-import { Shield, Clock, Award, Play, Info } from "lucide-react";
+import { Shield, Clock, Award, Play, Info, Lock } from "lucide-react";
 
 export default function Landing() {
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -93,11 +93,28 @@ export default function Landing() {
             
             {/* Hero Image */}
             <div className="hidden lg:block">
-              <img 
-                src="https://images.unsplash.com/photo-1589829545856-d10d557cf95f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600" 
-                alt="Professional legal consultation" 
-                className="rounded-2xl shadow-2xl w-full h-auto" 
-              />
+              <div className="bg-white/10 backdrop-blur-sm rounded-2xl shadow-2xl p-8 border border-white/20">
+                <div className="text-center">
+                  <div className="w-32 h-32 bg-white/20 rounded-full mx-auto mb-6 flex items-center justify-center">
+                    <Shield className="w-16 h-16 text-white" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-white mb-4">Secure & Confidential</h3>
+                  <p className="text-blue-100 mb-6">
+                    Your personal information is protected with enterprise-grade security. 
+                    We never share your data with third parties.
+                  </p>
+                  <div className="grid grid-cols-1 gap-4 text-sm text-blue-100">
+                    <div className="flex items-center justify-center">
+                      <Lock className="w-4 h-4 mr-2" />
+                      <span>256-bit SSL Encryption</span>
+                    </div>
+                    <div className="flex items-center justify-center">
+                      <Shield className="w-4 h-4 mr-2" />
+                      <span>GDPR Compliant</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
