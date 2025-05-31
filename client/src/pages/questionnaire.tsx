@@ -139,14 +139,26 @@ export default function Questionnaire() {
   const completeAssessmentMutation = useMutation({
     mutationFn: async () => {
       // First save the final data
-      await saveQuestionnaireMutation.mutateAsync({ 
-        ...questionnaireData,
-        completed: true 
-      });
+      let currentQuestionnaireId = questionnaireId;
+      
+      if (!currentQuestionnaireId) {
+        const saveResponse = await apiRequest("POST", "/api/questionnaire", {
+          ...questionnaireData,
+          completed: true 
+        });
+        const savedData = await saveResponse.json();
+        currentQuestionnaireId = savedData.id;
+        setQuestionnaireId(currentQuestionnaireId);
+      } else {
+        await apiRequest("PUT", `/api/questionnaire/${currentQuestionnaireId}`, {
+          ...questionnaireData,
+          completed: true 
+        });
+      }
       
       // Then create eligibility result
       const response = await apiRequest("POST", "/api/eligibility", {
-        questionnaireResponseId: questionnaireId,
+        questionnaireResponseId: currentQuestionnaireId,
       });
       return response.json();
     },
@@ -194,17 +206,9 @@ export default function Questionnaire() {
         }
         return 3;
       default:
-        return Math.min(currentStep + 1, totalSteps);
+        // Continue to next step sequentially
+        return currentStep + 1;
     }
-  };
-
-  // Check if current step is valid/should be shown
-  const shouldShowStep = (step: number): boolean => {
-    if (step === 1) return true;
-    if (step === 2 && questionnaireData.convictionState === "ny") return true;
-    if (step >= 3 && questionnaireData.hasMarijuanaConviction === "yes") return true;
-    if (step === 9) return true; // Always show record verification
-    return false;
   };
 
   const handleNext = () => {
