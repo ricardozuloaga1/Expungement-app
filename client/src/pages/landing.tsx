@@ -46,15 +46,26 @@ export default function Landing() {
       </nav>
 
       {/* Hero Section */}
-      <section className="primary-gradient min-h-[calc(100vh-4rem)]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-32">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+      <section className="relative min-h-[calc(100vh-4rem)] overflow-hidden">
+        {/* Background with integrated image */}
+        <div className="absolute inset-0 primary-gradient"></div>
+        <div className="absolute right-0 top-0 bottom-0 w-1/2 hidden lg:block">
+          <img 
+            src={professionalAttorneyImg}
+            alt="Professional legal consultant" 
+            className="w-full h-full object-cover object-center"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-600/80 to-transparent"></div>
+        </div>
+        
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-32">
+          <div className="grid lg:grid-cols-2 gap-12 items-center min-h-[calc(100vh-8rem)]">
             <div className="text-white">
               <h1 className="text-4xl lg:text-6xl font-bold mb-6">
                 Clear Your New York Marijuana Record
               </h1>
               <p className="text-xl lg:text-2xl mb-8 text-blue-100">
-                Check your eligibility for automatic expungement under MRTA 2021 and Clean Slate Act 2024
+                Check if your conviction qualifies for automatic expungement under the MRTA (2021) and the Clean Slate Act (effective 2024). It only takes a few minutes.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 mb-12">
                 <Button 
@@ -76,54 +87,53 @@ export default function Landing() {
               </div>
               
               {/* Trust Indicators */}
-              <div className="grid grid-cols-3 gap-6 text-center">
+              <div className="grid grid-cols-3 gap-6 text-center mb-8">
                 <div>
                   <Shield className="w-8 h-8 mx-auto mb-2 text-blue-200" />
                   <p className="text-sm">Secure & Private</p>
                 </div>
                 <div>
                   <Clock className="w-8 h-8 mx-auto mb-2 text-blue-200" />
-                  <p className="text-sm">5 Minute Assessment</p>
+                  <p className="text-sm">5-Minute Assessment</p>
                 </div>
                 <div>
                   <Award className="w-8 h-8 mx-auto mb-2 text-blue-200" />
                   <p className="text-sm">Legal Accuracy</p>
                 </div>
               </div>
-              
-              {/* Mobile Security Info */}
-              <div className="lg:hidden mt-12 p-6 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20">
-                <div className="text-center">
-                  <Lock className="w-12 h-12 text-blue-200 mx-auto mb-4" />
-                  <h4 className="text-lg font-semibold text-white mb-2">Your Privacy is Protected</h4>
-                  <p className="text-sm text-blue-100 mb-4">
-                    Enterprise-grade security with 256-bit SSL encryption. We never share your data.
-                  </p>
-                  <div className="flex items-center justify-center text-xs text-blue-200">
-                    <Shield className="w-3 h-3 mr-1" />
-                    <span>GDPR Compliant</span>
-                  </div>
-                </div>
-              </div>
             </div>
             
-            {/* Professional Attorney Image */}
-            <div className="hidden lg:block">
-              <div className="relative">
-                <img 
-                  src={professionalAttorneyImg}
-                  alt="Professional legal consultant" 
-                  className="rounded-2xl shadow-2xl w-full h-auto object-cover max-w-lg mx-auto"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent rounded-2xl"></div>
-                <div className="absolute bottom-6 left-6 right-6 text-white">
-                  <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
-                    <h4 className="font-semibold mb-2">Professional Legal Guidance</h4>
-                    <p className="text-sm text-blue-100">
-                      Attorney-reviewed process based on current NY state laws
-                    </p>
-                  </div>
-                </div>
+            {/* Right side is handled by the background image */}
+            <div className="hidden lg:block"></div>
+          </div>
+          
+          {/* Privacy Protection Bar */}
+          <div className="bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 p-6 mt-8">
+            <div className="flex items-center justify-center text-center">
+              <Lock className="w-6 h-6 text-white mr-3" />
+              <div>
+                <h4 className="text-lg font-semibold text-white">Your Privacy is Protected</h4>
+                <p className="text-sm text-blue-100">
+                  Enterprise-grade encryption with 256-bit SSL. We never share your data.
+                </p>
+                <p className="text-xs text-blue-200 mt-1">
+                  GDPR & NY Privacy Compliant
+                </p>
+              </div>
+            </div>
+          </div>
+          
+          {/* Mobile Security Info */}
+          <div className="lg:hidden mt-12 p-6 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20">
+            <div className="text-center">
+              <Lock className="w-12 h-12 text-blue-200 mx-auto mb-4" />
+              <h4 className="text-lg font-semibold text-white mb-2">Your Privacy is Protected</h4>
+              <p className="text-sm text-blue-100 mb-4">
+                Enterprise-grade security with 256-bit SSL encryption. We never share your data.
+              </p>
+              <div className="flex items-center justify-center text-xs text-blue-200">
+                <Shield className="w-3 h-3 mr-1" />
+                <span>GDPR Compliant</span>
               </div>
             </div>
           </div>
