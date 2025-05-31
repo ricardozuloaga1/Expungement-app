@@ -45,12 +45,12 @@ export default function Landing() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-r from-blue-600 via-blue-500 to-blue-400 overflow-hidden">
-        <div className="max-w-none mx-auto">
-          <div className="grid lg:grid-cols-2 min-h-[calc(100vh-4rem)]">
-            {/* Left side - Content */}
-            <div className="flex items-center px-4 sm:px-6 lg:px-8 py-20">
-              <div className="text-white max-w-xl">
+      <section className="min-h-[calc(100vh-4rem)] flex flex-col">
+        <div className="flex flex-1">
+          {/* Left side - Content with gradient background */}
+          <div className="flex-1 bg-gradient-to-r from-blue-600 via-blue-500 to-blue-400 flex items-center">
+            <div className="px-4 sm:px-6 lg:px-8 py-20 w-full max-w-2xl">
+              <div className="text-white">
                 <h1 className="text-4xl lg:text-5xl font-bold mb-6 leading-tight">
                   Clear Your New York Marijuana Record
                 </h1>
@@ -93,49 +93,49 @@ export default function Landing() {
                 </div>
               </div>
             </div>
-            
-            {/* Right side - Professional Image */}
-            <div className="relative hidden lg:block">
-              <img 
-                src="https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=1000&q=80"
-                alt="Professional legal consultant" 
-                className="absolute inset-0 w-full h-full object-cover object-center"
-              />
-              <div className="absolute inset-0 bg-gradient-to-l from-transparent to-blue-600/20"></div>
-            </div>
           </div>
           
-          {/* Privacy Protection Bar - Full Width */}
-          <div className="relative bg-blue-800/60 backdrop-blur-sm border-t border-blue-400/30">
-            <div className="px-4 sm:px-6 lg:px-8 py-6">
-              <div className="flex items-center justify-center text-center">
-                <Lock className="w-6 h-6 text-white mr-3 flex-shrink-0" />
-                <div>
-                  <h4 className="text-lg font-semibold text-white">Your Privacy is Protected</h4>
-                  <p className="text-sm text-blue-100">
-                    Enterprise-grade encryption with 256-bit SSL. We never share your data.
-                  </p>
-                  <p className="text-xs text-blue-200 mt-1">
-                    GDPR & NY Privacy Compliant
-                  </p>
-                </div>
+          {/* Right side - Professional Image */}
+          <div className="hidden lg:block flex-1 relative">
+            <img 
+              src="https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=1000&q=80"
+              alt="Professional legal consultant" 
+              className="w-full h-full object-cover object-center"
+            />
+            <div className="absolute inset-0 bg-gradient-to-l from-transparent via-transparent to-blue-600/10"></div>
+          </div>
+        </div>
+        
+        {/* Privacy Protection Bar - Full Width */}
+        <div className="bg-blue-800/80 backdrop-blur-sm border-t border-blue-400/30">
+          <div className="px-4 sm:px-6 lg:px-8 py-6">
+            <div className="flex items-center justify-center text-center">
+              <Lock className="w-6 h-6 text-white mr-3 flex-shrink-0" />
+              <div>
+                <h4 className="text-lg font-semibold text-white">Your Privacy is Protected</h4>
+                <p className="text-sm text-blue-100">
+                  Enterprise-grade encryption with 256-bit SSL. We never share your data.
+                </p>
+                <p className="text-xs text-blue-200 mt-1">
+                  GDPR & NY Privacy Compliant
+                </p>
               </div>
             </div>
           </div>
-          
-          {/* Mobile Security Info */}
-          <div className="lg:hidden px-4 sm:px-6 py-8">
-            <div className="bg-blue-800/40 backdrop-blur-sm rounded-xl border border-blue-400/30 p-6">
-              <div className="text-center">
-                <Lock className="w-12 h-12 text-blue-200 mx-auto mb-4" />
-                <h4 className="text-lg font-semibold text-white mb-2">Your Privacy is Protected</h4>
-                <p className="text-sm text-blue-100 mb-4">
-                  Enterprise-grade security with 256-bit SSL encryption. We never share your data.
-                </p>
-                <div className="flex items-center justify-center text-xs text-blue-200">
-                  <Shield className="w-3 h-3 mr-1" />
-                  <span>GDPR Compliant</span>
-                </div>
+        </div>
+        
+        {/* Mobile version - shows full content with background */}
+        <div className="lg:hidden bg-gradient-to-r from-blue-600 via-blue-500 to-blue-400 px-4 sm:px-6 py-8">
+          <div className="bg-blue-800/40 backdrop-blur-sm rounded-xl border border-blue-400/30 p-6">
+            <div className="text-center">
+              <Lock className="w-12 h-12 text-blue-200 mx-auto mb-4" />
+              <h4 className="text-lg font-semibold text-white mb-2">Your Privacy is Protected</h4>
+              <p className="text-sm text-blue-100 mb-4">
+                Enterprise-grade security with 256-bit SSL encryption. We never share your data.
+              </p>
+              <div className="flex items-center justify-center text-xs text-blue-200">
+                <Shield className="w-3 h-3 mr-1" />
+                <span>GDPR Compliant</span>
               </div>
             </div>
           </div>
