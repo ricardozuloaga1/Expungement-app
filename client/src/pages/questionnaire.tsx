@@ -178,12 +178,54 @@ export default function Questionnaire() {
     setQuestionnaireData(prev => ({ ...prev, [field]: value }));
   };
 
+  // Determine next step based on current answers
+  const getNextStep = (currentStep: number): number => {
+    switch (currentStep) {
+      case 1: // State question
+        if (questionnaireData.convictionState === "other") {
+          // End flow if not NY conviction
+          return totalSteps + 1; // Exit
+        }
+        return 2;
+      case 2: // Has conviction question
+        if (questionnaireData.hasMarijuanaConviction === "no") {
+          // Skip to end if no conviction
+          return 9; // Go to record verification
+        }
+        return 3;
+      default:
+        return Math.min(currentStep + 1, totalSteps);
+    }
+  };
+
+  // Check if current step is valid/should be shown
+  const shouldShowStep = (step: number): boolean => {
+    if (step === 1) return true;
+    if (step === 2 && questionnaireData.convictionState === "ny") return true;
+    if (step >= 3 && questionnaireData.hasMarijuanaConviction === "yes") return true;
+    if (step === 9) return true; // Always show record verification
+    return false;
+  };
+
   const handleNext = () => {
     // Save current step data
     saveQuestionnaireMutation.mutate(questionnaireData);
     
-    if (currentStep < totalSteps) {
-      setCurrentStep(currentStep + 1);
+    // Handle special exit conditions
+    if (questionnaireData.convictionState === "other") {
+      toast({
+        title: "Not Supported",
+        description: "We currently only support New York marijuana convictions. Please contact a local attorney for assistance with other states.",
+        variant: "destructive",
+      });
+      setLocation("/");
+      return;
+    }
+    
+    const nextStep = getNextStep(currentStep);
+    
+    if (nextStep <= totalSteps) {
+      setCurrentStep(nextStep);
     } else {
       // Complete assessment
       completeAssessmentMutation.mutate();
