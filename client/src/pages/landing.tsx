@@ -46,94 +46,97 @@ export default function Landing() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative min-h-[calc(100vh-4rem)] overflow-hidden">
-        {/* Background with integrated image */}
-        <div className="absolute inset-0 primary-gradient"></div>
-        <div className="absolute right-0 top-0 bottom-0 w-1/2 hidden lg:block">
-          <img 
-            src={professionalAttorneyImg}
-            alt="Professional legal consultant" 
-            className="w-full h-full object-cover object-center"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-600/80 to-transparent"></div>
-        </div>
-        
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-32">
-          <div className="grid lg:grid-cols-2 gap-12 items-center min-h-[calc(100vh-8rem)]">
-            <div className="text-white">
-              <h1 className="text-4xl lg:text-6xl font-bold mb-6">
-                Clear Your New York Marijuana Record
-              </h1>
-              <p className="text-xl lg:text-2xl mb-8 text-blue-100">
-                Check if your conviction qualifies for automatic expungement under the MRTA (2021) and the Clean Slate Act (effective 2024). It only takes a few minutes.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 mb-12">
-                <Button 
-                  onClick={handleStartAssessment}
-                  className="bg-white text-primary px-8 py-4 text-lg font-semibold hover:bg-gray-50"
-                  size="lg"
-                >
-                  <Play className="w-5 h-5 mr-2" />
-                  Start Free Assessment
-                </Button>
-                <Button 
-                  variant="outline"
-                  className="border-2 border-white text-white px-8 py-4 text-lg font-semibold hover:bg-white hover:text-primary bg-transparent"
-                  size="lg"
-                >
-                  <Info className="w-5 h-5 mr-2" />
-                  Learn More
-                </Button>
-              </div>
-              
-              {/* Trust Indicators */}
-              <div className="grid grid-cols-3 gap-6 text-center mb-8">
-                <div>
-                  <Shield className="w-8 h-8 mx-auto mb-2 text-blue-200" />
-                  <p className="text-sm">Secure & Private</p>
+      <section className="relative bg-gradient-to-r from-blue-600 via-blue-500 to-blue-400 overflow-hidden">
+        <div className="max-w-none mx-auto">
+          <div className="grid lg:grid-cols-2 min-h-[calc(100vh-4rem)]">
+            {/* Left side - Content */}
+            <div className="flex items-center px-4 sm:px-6 lg:px-8 py-20">
+              <div className="text-white max-w-xl">
+                <h1 className="text-4xl lg:text-5xl font-bold mb-6 leading-tight">
+                  Clear Your New York Marijuana Record
+                </h1>
+                <p className="text-lg lg:text-xl mb-8 text-blue-100 leading-relaxed">
+                  Check if your conviction qualifies for automatic expungement under the MRTA (2021) and the Clean Slate Act (effective 2024). It only takes a few minutes.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4 mb-12">
+                  <Button 
+                    onClick={handleStartAssessment}
+                    className="bg-white text-blue-600 px-8 py-4 text-lg font-semibold hover:bg-gray-50 shadow-lg"
+                    size="lg"
+                  >
+                    <Play className="w-5 h-5 mr-2" />
+                    Start Free Assessment
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    className="border-2 border-white text-white px-8 py-4 text-lg font-semibold hover:bg-white hover:text-blue-600 bg-transparent"
+                    size="lg"
+                  >
+                    <Info className="w-5 h-5 mr-2" />
+                    Learn More
+                  </Button>
                 </div>
-                <div>
-                  <Clock className="w-8 h-8 mx-auto mb-2 text-blue-200" />
-                  <p className="text-sm">5-Minute Assessment</p>
-                </div>
-                <div>
-                  <Award className="w-8 h-8 mx-auto mb-2 text-blue-200" />
-                  <p className="text-sm">Legal Accuracy</p>
+                
+                {/* Trust Indicators */}
+                <div className="grid grid-cols-3 gap-6 text-center">
+                  <div>
+                    <Shield className="w-8 h-8 mx-auto mb-2 text-blue-200" />
+                    <p className="text-sm text-blue-100">Secure & Private</p>
+                  </div>
+                  <div>
+                    <Clock className="w-8 h-8 mx-auto mb-2 text-blue-200" />
+                    <p className="text-sm text-blue-100">5-Minute Assessment</p>
+                  </div>
+                  <div>
+                    <Award className="w-8 h-8 mx-auto mb-2 text-blue-200" />
+                    <p className="text-sm text-blue-100">Legal Accuracy</p>
+                  </div>
                 </div>
               </div>
             </div>
             
-            {/* Right side is handled by the background image */}
-            <div className="hidden lg:block"></div>
+            {/* Right side - Professional Image */}
+            <div className="relative hidden lg:block">
+              <img 
+                src={professionalAttorneyImg}
+                alt="Professional legal consultant" 
+                className="absolute inset-0 w-full h-full object-cover object-center"
+              />
+              <div className="absolute inset-0 bg-gradient-to-l from-transparent to-blue-600/20"></div>
+            </div>
           </div>
           
-          {/* Privacy Protection Bar */}
-          <div className="bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 p-6 mt-8">
-            <div className="flex items-center justify-center text-center">
-              <Lock className="w-6 h-6 text-white mr-3" />
-              <div>
-                <h4 className="text-lg font-semibold text-white">Your Privacy is Protected</h4>
-                <p className="text-sm text-blue-100">
-                  Enterprise-grade encryption with 256-bit SSL. We never share your data.
-                </p>
-                <p className="text-xs text-blue-200 mt-1">
-                  GDPR & NY Privacy Compliant
-                </p>
+          {/* Privacy Protection Bar - Full Width */}
+          <div className="relative bg-blue-800/60 backdrop-blur-sm border-t border-blue-400/30">
+            <div className="px-4 sm:px-6 lg:px-8 py-6">
+              <div className="flex items-center justify-center text-center">
+                <Lock className="w-6 h-6 text-white mr-3 flex-shrink-0" />
+                <div>
+                  <h4 className="text-lg font-semibold text-white">Your Privacy is Protected</h4>
+                  <p className="text-sm text-blue-100">
+                    Enterprise-grade encryption with 256-bit SSL. We never share your data.
+                  </p>
+                  <p className="text-xs text-blue-200 mt-1">
+                    GDPR & NY Privacy Compliant
+                  </p>
+                </div>
               </div>
             </div>
           </div>
           
           {/* Mobile Security Info */}
-          <div className="lg:hidden mt-12 p-6 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20">
-            <div className="text-center">
-              <Lock className="w-12 h-12 text-blue-200 mx-auto mb-4" />
-              <h4 className="text-lg font-semibold text-white mb-2">Your Privacy is Protected</h4>
-              <p className="text-sm text-blue-100 mb-4">
-                Enterprise-grade security with 256-bit SSL encryption. We never share your data.
-              </p>
-              <div className="flex items-center justify-center text-xs text-blue-200">
-                <Shield className="w-3 h-3 mr-1" />
-                <span>GDPR Compliant</span>
+          <div className="lg:hidden px-4 sm:px-6 py-8">
+            <div className="bg-blue-800/40 backdrop-blur-sm rounded-xl border border-blue-400/30 p-6">
+              <div className="text-center">
+                <Lock className="w-12 h-12 text-blue-200 mx-auto mb-4" />
+                <h4 className="text-lg font-semibold text-white mb-2">Your Privacy is Protected</h4>
+                <p className="text-sm text-blue-100 mb-4">
+                  Enterprise-grade security with 256-bit SSL encryption. We never share your data.
+                </p>
+                <div className="flex items-center justify-center text-xs text-blue-200">
+                  <Shield className="w-3 h-3 mr-1" />
+                  <span>GDPR Compliant</span>
+                </div>
               </div>
             </div>
           </div>
