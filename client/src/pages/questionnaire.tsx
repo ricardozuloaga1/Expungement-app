@@ -13,11 +13,47 @@ import { ArrowLeft, ArrowRight, Save } from "lucide-react";
 import type { QuestionnaireResponse } from "@shared/schema";
 
 interface QuestionnaireData {
+  // Section 1: Basic Info
+  convictionState?: string;
+  hasMarijuanaConviction?: string;
+  offenseType?: string;
+  convictionMonth?: string;
+  convictionYear?: string;
+  knowsPenalCode?: string;
+  penalCode?: string;
+  
+  // Section 2: MRTA Eligibility
+  possessionAmount?: string;
+  ageAtOffense?: string;
+  receivedNotice?: string;
+  
+  // Section 3: Clean Slate Act
+  convictionLevel?: string;
+  servedTime?: string;
+  releaseMonth?: string;
+  releaseYear?: string;
+  otherConvictions?: string;
+  onSupervision?: string;
+  hasExcludedOffenses?: string;
+  
+  // Section 4: Petition-Based Sealing
+  totalConvictions?: string;
+  totalFelonies?: string;
+  tenYearsPassed?: string;
+  sentenceCompleted?: string;
+  
+  // Section 5: Record Verification
+  hasRecords?: string;
+  wantsRapAssistance?: string;
+  uploadedDocument?: string;
+  
+  // Legacy fields (for compatibility)
   age?: string;
   county?: string;
   chargeTypes?: string[];
   firstArrestDate?: string;
   convictionDetails?: any;
+  completed?: boolean;
 }
 
 export default function Questionnaire() {
@@ -27,10 +63,8 @@ export default function Questionnaire() {
   const queryClient = useQueryClient();
 
   const [currentStep, setCurrentStep] = useState(1);
-  const totalSteps = 3;
-  const [questionnaireData, setQuestionnaireData] = useState<QuestionnaireData>({
-    chargeTypes: [],
-  });
+  const totalSteps = 9;
+  const [questionnaireData, setQuestionnaireData] = useState<QuestionnaireData>({});
   const [questionnaireId, setQuestionnaireId] = useState<number | null>(null);
 
   // Redirect to login if not authenticated
