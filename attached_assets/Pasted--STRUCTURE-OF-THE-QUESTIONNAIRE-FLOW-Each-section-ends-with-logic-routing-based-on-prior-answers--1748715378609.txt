@@ -1,0 +1,147 @@
+🔁 STRUCTURE OF THE QUESTIONNAIRE FLOW
+
+Each section ends with logic routing based on prior answers. Conditional branching should show only relevant next questions.
+
+⸻
+
+🔹 SECTION 1: INTRO + CONTEXT
+
+Purpose: Establish the basics — jurisdiction, conviction status, and scope.
+	1.	Which state were you convicted in?
+	•	⬜ New York
+	•	⬜ Another state
+	•	⬜ I’m not sure
+(If not NY, inform user that only NY is supported right now and exit flow)
+	2.	Have you ever been convicted of a marijuana-related offense in New York?
+	•	⬜ Yes
+	•	⬜ No
+	•	⬜ Not sure
+	3.	Was the conviction for marijuana possession, sale, or another type?
+	•	⬜ Possession (personal use)
+	•	⬜ Possession with intent to distribute
+	•	⬜ Sale/distribution
+	•	⬜ Cultivation
+	•	⬜ Other (specify)
+	•	⬜ I don’t know
+	4.	When were you convicted?
+	•	(Date picker or month/year field)
+	5.	Do you know the Penal Law code or charge you were convicted under?
+	•	⬜ Yes (enter manually)
+	•	⬜ No
+
+⸻
+
+🔹 SECTION 2: ELIGIBILITY UNDER MRTA (AUTOMATIC)
+
+Purpose: Determine if the offense has likely already been expunged automatically.
+	6.	Was your marijuana conviction for possession of 3 ounces (85g) or less?
+	•	⬜ Yes
+	•	⬜ No
+	•	⬜ Not sure
+	7.	Were you 21 or older at the time of the offense?
+	•	⬜ Yes
+	•	⬜ No
+	•	⬜ Not sure
+	8.	Have you ever received a notice from the court about your record being sealed or expunged?
+	•	⬜ Yes
+	•	⬜ No
+	•	⬜ Not sure
+
+⸻
+
+🔹 SECTION 3: CLEAN SLATE ACT (Sealing after 3/8 Years)
+
+Purpose: Determine if offense may be sealed under 2024’s automatic Clean Slate rules.
+	9.	Was your conviction a felony or a misdemeanor?
+	•	⬜ Felony
+	•	⬜ Misdemeanor
+	•	⬜ Not sure
+	10.	Have you served jail or prison time for that offense?
+
+	•	⬜ Yes
+	•	⬜ No
+
+	11.	If yes, when were you released from custody?
+
+	•	(Date field)
+
+	12.	Have you been convicted of any other crime since that conviction?
+
+	•	⬜ Yes
+	•	⬜ No
+
+	13.	Are you currently on probation or parole?
+
+	•	⬜ Yes
+	•	⬜ No
+
+	14.	Are any of your convictions for a Class A felony or sex offense?
+
+	•	⬜ Yes
+	•	⬜ No
+	•	⬜ Not sure
+
+⸻
+
+🔹 SECTION 4: PETITION-BASED SEALING UNDER CPL § 160.59
+
+Purpose: Determine if user may need to file a petition instead of being cleared automatically.
+	15.	How many total convictions do you have in New York?
+
+	•	(Numeric field)
+
+	16.	How many of those are felonies?
+
+	•	(Numeric field)
+
+	17.	Have at least 10 years passed since your last conviction or sentence completion?
+
+	•	⬜ Yes
+	•	⬜ No
+	•	⬜ Not sure
+
+	18.	Were all fines, probation, parole, or other sentence conditions completed?
+
+	•	⬜ Yes
+	•	⬜ No
+	•	⬜ Not sure
+
+⸻
+
+🔹 SECTION 5: RECORD VERIFICATION & DOCUMENTS
+
+Purpose: Prepare the user for RAP retrieval, verification, and support.
+	19.	Do you have a copy of your RAP sheet or criminal court record?
+
+	•	⬜ Yes – I have it on hand
+	•	⬜ No – I need help obtaining it
+
+	20.	Would you like assistance requesting your official RAP sheet?
+
+	•	⬜ Yes
+	•	⬜ No
+
+	21.	(Optional Upload): Upload a scanned copy of your court record or RAP sheet (PDF, JPG).
+
+⸻
+
+🔹 SECTION 6: OUTCOME + NEXT STEPS
+
+Purpose: Summarize eligibility and route user accordingly.
+
+Show user:
+	•	❓ Are they likely eligible under:
+	•	MRTA (automatic expungement)
+	•	Clean Slate (sealing)
+	•	Petition (filing needed)
+	•	❌ Not eligible yet
+	•	📄 Download free report OR
+	•	🔐 Offer paid form generator / filing support
+
+⸻
+
+✅ Other Notes for Devs
+	•	Every question should be saved to the user’s session/db in real time.
+	•	Add tooltips (i) next to legal jargon with simple popups (e.g., “What is a Class A felony?”)
+	•	Logic branching ensures unnecessary questions are skipped.
+	•	Consider visual stepper (e.g., 1/6: Offense Info → 2/6: Eligibility Check…)
