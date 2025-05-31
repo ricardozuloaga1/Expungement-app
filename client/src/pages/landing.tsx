@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { AuthModal } from "@/components/auth-modal";
 import { Shield, Clock, Award, Play, Info, Lock } from "lucide-react";
-import professionalAttorneyImg from "@assets/IMG_0075.png";
 
 export default function Landing() {
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -98,7 +97,7 @@ export default function Landing() {
             {/* Right side - Professional Image */}
             <div className="relative hidden lg:block">
               <img 
-                src={professionalAttorneyImg}
+                src="https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=1000&q=80"
                 alt="Professional legal consultant" 
                 className="absolute inset-0 w-full h-full object-cover object-center"
               />
