@@ -96,7 +96,7 @@ export default function Landing() {
           </div>
           
           {/* Right side - Professional Image */}
-          <div className="hidden lg:block flex-1 relative">
+          <div className="hidden md:block flex-1 relative">
             <img 
               src="https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=1000&q=80"
               alt="Professional legal consultant" 
