@@ -89,6 +89,21 @@ export default function Landing() {
                   <p className="text-sm">Legal Accuracy</p>
                 </div>
               </div>
+              
+              {/* Mobile Security Info */}
+              <div className="lg:hidden mt-12 p-6 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20">
+                <div className="text-center">
+                  <Lock className="w-12 h-12 text-blue-200 mx-auto mb-4" />
+                  <h4 className="text-lg font-semibold text-white mb-2">Your Privacy is Protected</h4>
+                  <p className="text-sm text-blue-100 mb-4">
+                    Enterprise-grade security with 256-bit SSL encryption. We never share your data.
+                  </p>
+                  <div className="flex items-center justify-center text-xs text-blue-200">
+                    <Shield className="w-3 h-3 mr-1" />
+                    <span>GDPR Compliant</span>
+                  </div>
+                </div>
+              </div>
             </div>
             
             {/* Hero Image */}
