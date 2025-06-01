@@ -199,14 +199,8 @@ export default function Questionnaire() {
           return totalSteps + 1; // Exit
         }
         return 2;
-      case 2: // Has conviction question
-        if (questionnaireData.hasMarijuanaConviction === "no") {
-          // Skip to end if no conviction
-          return 9; // Go to record verification
-        }
-        return 3;
       default:
-        // Continue to next step sequentially
+        // Always continue to next step sequentially
         return currentStep + 1;
     }
   };
