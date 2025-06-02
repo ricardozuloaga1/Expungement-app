@@ -1,0 +1,106 @@
+🛠️ Prompt for Replit AI: Integrate Legal Document Templates for User Download
+❗Objective
+Integrate the provided legal document templates (e.g., Petition to Seal, Affidavit in Support, Service Letters, etc.) into the web app so that:
+
+Each template can be populated with user-specific data collected from the eligibility questionnaire
+
+The user can download the filled document as a PDF or Word file (and/or copy as plain text)
+
+The app guides users to the right templates based on their eligibility outcome
+
+✅ Instructions
+1. Convert Templates to App-Usable Format
+Store each template as a string (or multi-line string) with placeholders like [YOUR FULL NAME], [COUNTY NAME], [Docket Number], etc.
+
+Example:
+
+js
+Copy
+Edit
+const petitionTemplate = `
+  SUPREME COURT OF THE STATE OF NEW YORK
+  [COUNTY NAME] COUNTY
+
+  ...
+  Applicant: [YOUR FULL NAME]
+  ...
+`;
+2. Map Questionnaire Fields to Placeholders
+Define a function that maps user input fields to each placeholder (e.g., user.fullName → [YOUR FULL NAME])
+
+Example mapping object:
+
+js
+Copy
+Edit
+const userFields = {
+  '[YOUR FULL NAME]': user.fullName,
+  '[COUNTY NAME]': user.county,
+  '[Docket Number]': user.docketNumber,
+  // etc.
+};
+3. Template Rendering Logic
+Write a function that replaces placeholders in the template string with the corresponding user values:
+
+js
+Copy
+Edit
+function renderTemplate(template, userFields) {
+  let filled = template;
+  for (const [key, value] of Object.entries(userFields)) {
+    filled = filled.replaceAll(key, value || '');
+  }
+  return filled;
+}
+Allow for multi-line, plain text, or HTML output (for PDF export).
+
+4. PDF/Document Generation
+Use a library such as html-pdf, pdf-lib, or jsPDF to convert the rendered template into a downloadable PDF.
+
+Optionally, offer a Word (.docx) download using docx or similar libraries.
+
+For email: allow users to copy the filled letter as plain text or auto-open in their mail client.
+
+5. Eligibility-Based Routing
+Link the templates to user eligibility:
+
+If user is eligible for petition-based sealing, show petition/affidavit/service/certificate templates.
+
+If user needs Clean Slate proof, show request letter template.
+
+For MRTA or “not yet eligible,” route to those document sets.
+
+Provide a “Download All” option to export a bundled ZIP.
+
+6. Instructions and Preview
+Provide a preview of each document before download.
+
+Offer brief guidance for each (“Send this to the Court Clerk at…”, “Mail this to the DA at…”).
+
+7. (Optional) User Edits
+Allow the user to edit any field in the template before finalizing the download (helpful for custom circumstances).
+
+📦 Sample Integration Function
+js
+Copy
+Edit
+function generateLegalDoc(template, userData) {
+  // userData: { '[YOUR FULL NAME]': 'John Doe', ... }
+  let doc = template;
+  for (let key in userData) {
+    doc = doc.replaceAll(key, userData[key]);
+  }
+  return doc;
+}
+
+// Example usage:
+const filledPetition = generateLegalDoc(petitionTemplate, userFields);
+// Pass to PDF generator
+💡 Helpful Libraries
+pdf-lib
+
+jsPDF
+
+docx
+
+html-pdf
