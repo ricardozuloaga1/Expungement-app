@@ -94,7 +94,7 @@ export default function Home() {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-8 mb-12">
+        <div className="grid md:grid-cols-3 gap-8 mb-12">
           {/* Assessment Card */}
           <Card className="bg-white shadow-lg">
             <CardHeader>
@@ -166,6 +166,29 @@ export default function Home() {
                   </Button>
                 </div>
               )}
+            </CardContent>
+          </Card>
+
+          {/* Education Card */}
+          <Card className="bg-white shadow-lg">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <BookOpen className="w-6 h-6 mr-3 text-blue-600" />
+                Legal Education
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <p className="text-neutral-medium">
+                  Learn about NY record relief laws through interactive modules and earn achievement badges.
+                </p>
+                <Link href="/education">
+                  <Button className="w-full bg-blue-600 hover:bg-blue-700">
+                    <BookOpen className="w-4 h-4 mr-2" />
+                    Start Learning
+                  </Button>
+                </Link>
+              </div>
             </CardContent>
           </Card>
         </div>
