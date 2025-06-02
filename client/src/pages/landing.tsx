@@ -201,29 +201,18 @@ export default function Landing() {
                 position: 'relative'
               }}
             >
-              {/* Placeholder for professional man image */}
-              <div 
+              {/* Professional consultation image */}
+              <img 
+                src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500&h=600&fit=crop&crop=face"
+                alt="Professional legal consultation"
                 style={{
                   width: '400px',
                   height: '500px',
-                  background: 'linear-gradient(45deg, #6b7280 0%, #4a5568 100%)',
+                  objectFit: 'cover',
                   borderRadius: '8px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: 'white',
-                  fontSize: '1rem',
-                  textAlign: 'center',
-                  padding: '2rem'
+                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
                 }}
-              >
-                {/* Replace this div with actual image */}
-                <div className="body-text">
-                  Professional man in suit standing in front of courthouse/government building
-                  <br/><br/>
-                  <small>Replace with: &lt;img src="your-image-url.jpg" alt="Professional consultation" className="hero-image" /&gt;</small>
-                </div>
-              </div>
+              />
               
               {/* Background courthouse elements */}
               <div 
