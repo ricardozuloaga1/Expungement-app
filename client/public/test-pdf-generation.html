@@ -468,15 +468,42 @@
                 yPos += 8;
                 doc.setFont(undefined, 'normal');
                 
-                result.recommendations.slice(0, 3).forEach((rec, index) => {
-                    doc.text(`${index + 1}. ${rec.title}`, 20, yPos);
+                // Sort by priority and take top recommendations
+                const sortedRecs = result.recommendations.sort((a, b) => (a.priority || 0) - (b.priority || 0));
+                
+                sortedRecs.slice(0, 4).forEach((rec, index) => {
+                    if (yPos > 250) {
+                        doc.addPage();
+                        yPos = 20;
+                    }
+                    
+                    // Title with priority indicator
+                    doc.setFont(undefined, 'bold');
+                    const priority = rec.priority !== undefined ? ` (Priority ${rec.priority})` : '';
+                    doc.text(`${index + 1}. ${rec.title}${priority}`, 20, yPos);
                     yPos += 6;
+                    
+                    // Description
+                    doc.setFont(undefined, 'normal');
                     const descLines = doc.splitTextToSize(rec.description, 160);
                     descLines.forEach(line => {
+                        if (yPos > 280) {
+                            doc.addPage();
+                            yPos = 20;
+                        }
                         doc.text(line, 25, yPos);
                         yPos += 5;
                     });
-                    yPos += 3;
+                    
+                    // Timeline if available
+                    if (rec.timeline) {
+                        doc.setFont(undefined, 'italic');
+                        doc.text(`Timeline: ${rec.timeline}`, 25, yPos);
+                        yPos += 5;
+                        doc.setFont(undefined, 'normal');
+                    }
+                    
+                    yPos += 5; // Space between recommendations
                 });
             }
 
