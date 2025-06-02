@@ -16,7 +16,7 @@ interface QuestionnaireData {
   // Section 1: Basic Info
   convictionState?: string;
   hasMarijuanaConviction?: string;
-  offenseType?: string;
+  offenseTypes?: string[];
   convictionMonth?: string;
   convictionYear?: string;
   knowsPenalCode?: string;

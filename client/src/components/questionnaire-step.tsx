@@ -140,8 +140,8 @@ export function QuestionnaireStep({ step, data, onUpdate }: QuestionnaireStepPro
           <div className="space-y-6">
             <div>
               <Label className="flex items-center text-sm font-medium text-neutral-dark mb-3">
-                Was the conviction for marijuana possession, sale, or another type?
-                {renderTooltip("Different offense types have different eligibility rules for expungement.", "offense-type")}
+                What type of marijuana conviction(s) do you have? (Select all that apply)
+                {renderTooltip("Different offense types have different eligibility rules for expungement. You can select multiple if you have more than one type.", "offense-type")}
               </Label>
               <div className="grid grid-cols-1 gap-3">
                 {[
@@ -151,21 +151,49 @@ export function QuestionnaireStep({ step, data, onUpdate }: QuestionnaireStepPro
                   { id: "cultivation", title: "Cultivation", description: "Growing marijuana plants" },
                   { id: "other", title: "Other", description: "Paraphernalia, public use, etc." },
                   { id: "dont_know", title: "I don't know", description: "Not sure about the specific charge" }
-                ].map((option) => (
-                  <Button
-                    key={option.id}
-                    variant="outline"
-                    onClick={() => onUpdate("offenseType", option.id)}
-                    className={`p-4 h-auto text-left justify-start ${
-                      data.offenseType === option.id ? "border-primary bg-blue-50" : "border-gray-300"
-                    }`}
-                  >
-                    <div>
-                      <div className="font-medium">{option.title}</div>
-                      <div className="text-sm text-neutral-medium">{option.description}</div>
-                    </div>
-                  </Button>
-                ))}
+                ].map((option) => {
+                  const selectedOffenses = data.offenseTypes || [];
+                  const isSelected = selectedOffenses.includes(option.id);
+                  
+                  const handleToggle = () => {
+                    let newOffenses;
+                    if (isSelected) {
+                      // Remove from array
+                      newOffenses = selectedOffenses.filter((id: string) => id !== option.id);
+                    } else {
+                      // Add to array
+                      newOffenses = [...selectedOffenses, option.id];
+                    }
+                    onUpdate("offenseTypes", newOffenses);
+                  };
+
+                  return (
+                    <Button
+                      key={option.id}
+                      variant="outline"
+                      onClick={handleToggle}
+                      className={`p-4 h-auto text-left justify-start ${
+                        isSelected ? "border-primary bg-blue-50" : "border-gray-300"
+                      }`}
+                    >
+                      <div className="flex items-start w-full">
+                        <div className={`w-4 h-4 rounded border-2 mr-3 mt-1 flex-shrink-0 ${
+                          isSelected ? "bg-primary border-primary" : "border-gray-300"
+                        }`}>
+                          {isSelected && (
+                            <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          )}
+                        </div>
+                        <div>
+                          <div className="font-medium">{option.title}</div>
+                          <div className="text-sm text-neutral-medium">{option.description}</div>
+                        </div>
+                      </div>
+                    </Button>
+                  );
+                })}
               </div>
             </div>
           </div>
