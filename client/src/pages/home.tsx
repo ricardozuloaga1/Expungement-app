@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { isUnauthorizedError } from "@/lib/authUtils";
-import { Play, FileText, Star, LogOut, User } from "lucide-react";
+import { Play, FileText, Star, LogOut, User, BookOpen } from "lucide-react";
 import type { QuestionnaireResponse, EligibilityResult } from "@shared/schema";
 
 export default function Home() {
