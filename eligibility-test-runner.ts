@@ -1,4 +1,5 @@
 import { analyzeEligibility } from './client/src/lib/eligibility';
+import { generatePDFReport } from './client/src/lib/pdf-generator';
 
 const testCases = [
   {
@@ -160,6 +161,17 @@ console.log('==========================================\n');
 let passCount = 0;
 let totalTests = testCases.length;
 
+// Create mock user for PDF generation
+const mockUser = {
+  id: 'test-user',
+  email: 'test@example.com',
+  firstName: 'Test',
+  lastName: 'User',
+  profileImageUrl: null,
+  createdAt: new Date(),
+  updatedAt: new Date()
+};
+
 testCases.forEach((test, index) => {
   try {
     const result = analyzeEligibility(test.input);
@@ -181,6 +193,27 @@ testCases.forEach((test, index) => {
     
     if (pass) {
       passCount++;
+      
+      // Generate PDF for passing tests
+      try {
+        // Convert eligibility analysis to database format
+        const mockResult = {
+          id: index + 1,
+          userId: 'test-user',
+          questionnaireResponseId: index + 1,
+          automaticExpungement: result.automaticExpungement,
+          petitionBasedSealing: result.petitionBasedSealing,
+          eligibilityDetails: JSON.stringify(result.eligibilityDetails),
+          recommendations: JSON.stringify(result.recommendations),
+          createdAt: new Date(),
+          updatedAt: new Date()
+        };
+        
+        generatePDFReport(mockResult, mockUser, test.input);
+        console.log(`📄 PDF generated: Test_${index + 1}_${test.name.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`);
+      } catch (pdfError) {
+        console.log(`⚠️  PDF generation failed: ${pdfError.message}`);
+      }
     } else {
       console.log(`❌ MISMATCH: Expected '${test.expectedStatus}' but got '${result.eligibilityStatus}'`);
     }
