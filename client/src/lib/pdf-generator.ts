@@ -2,9 +2,14 @@ import jsPDF from 'jspdf';
 import type { EligibilityResult, User } from "@shared/schema";
 
 function generateExecutiveSummary(result: EligibilityResult): string {
+  // Check eligibility details for Clean Slate cases
+  const details = result.eligibilityDetails as any;
+  const isCleanSlateEligible = details?.cleanSlateApplicable || 
+    (details?.primaryReason && details.primaryReason.includes("Clean Slate"));
+  
   if (result.automaticExpungement) {
     return "Based on the information you provided, you are eligible for automatic expungement of your marijuana-related conviction under New York's Marihuana Regulation and Taxation Act (MRTA), enacted in 2021. Your conviction should have already been automatically expunged by the state, though verification with the court is recommended to obtain proper documentation.";
-  } else if (result.automaticSealing) {
+  } else if (result.automaticSealing || isCleanSlateEligible) {
     return "Based on the information you provided, you are eligible for automatic sealing under New York's Clean Slate Act (CPL § 160.57). Your record will be automatically sealed without any action required on your part, effective November 16, 2024.";
   } else if (result.petitionBasedSealing) {
     return "Based on your responses, you may be eligible for petition-based record sealing under New York Criminal Procedure Law § 160.59. This process requires filing a formal petition with the court and obtaining judicial approval, but offers significant benefits in limiting public access to your criminal record.";
@@ -15,12 +20,17 @@ function generateExecutiveSummary(result: EligibilityResult): string {
 
 function generateStatutoryBasis(result: EligibilityResult, questionnaireData?: any): string {
   let basis = "";
+  
+  // Check eligibility details for Clean Slate cases
+  const details = result.eligibilityDetails as any;
+  const isCleanSlateEligible = details?.cleanSlateApplicable || 
+    (details?.primaryReason && details.primaryReason.includes("Clean Slate"));
 
   if (result.automaticExpungement) {
     basis = `Your marijuana-related conviction qualifies for automatic expungement under the Marihuana Regulation and Taxation Act (MRTA), specifically codified in New York Criminal Procedure Law § 160.50(3)(k). This provision mandates automatic expungement of convictions for unlawful possession of marihuana under Penal Law § 221.05, § 221.10, § 221.15, § 221.35, and § 221.40 that occurred prior to March 31, 2021.
 
 The MRTA became effective on March 31, 2021, and required automatic expungement without the need for individual petitions or court appearances. Under CPL § 160.50(3)(k), qualifying records are automatically sealed and treated as if the arrest or conviction never occurred.`;
-  } else if (result.automaticSealing) {
+  } else if (result.automaticSealing || isCleanSlateEligible) {
     basis = `Your conviction qualifies for automatic sealing under New York's Clean Slate Act, codified in Criminal Procedure Law § 160.57. This statute provides for automatic sealing of eligible criminal convictions effective November 16, 2024. The Clean Slate Act covers misdemeanor convictions after 3 years and felony convictions after 8 years from sentence completion, provided certain conditions are met.
 
 Under CPL § 160.57, qualifying records are automatically sealed without requiring individual petitions or court appearances. Once sealed, these records are not accessible to most employers or landlords, though certain exceptions exist for law enforcement and specific regulated industries.`;
@@ -226,8 +236,13 @@ For personalized legal counsel regarding your specific situation, please consult
 }
 
 function getEligibilityStatus(result: EligibilityResult): string {
+  // Check eligibility details for Clean Slate cases
+  const details = result.eligibilityDetails as any;
+  const isCleanSlateEligible = details?.cleanSlateApplicable || 
+    (details?.primaryReason && details.primaryReason.includes("Clean Slate"));
+    
   if (result.automaticExpungement) return 'Eligible for Automatic Expungement';
-  if ((result as any).automaticSealing) return 'Eligible for Automatic Sealing';
+  if (result.automaticSealing || isCleanSlateEligible) return 'Eligible for Automatic Sealing';
   if (result.petitionBasedSealing) return 'Eligible for Petition-Based Sealing';
   return 'Not Currently Eligible';
 }
