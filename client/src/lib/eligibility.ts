@@ -26,7 +26,7 @@ export function analyzeEligibility(questionnaireData: any): EligibilityAnalysis 
     // New comprehensive data structure
     convictionState,
     hasMarijuanaConviction,
-    offenseType,
+    offenseTypes = [],
     convictionMonth,
     convictionYear,
     possessionAmount,
@@ -103,7 +103,7 @@ export function analyzeEligibility(questionnaireData: any): EligibilityAnalysis 
   }
 
   // PRIORITY 2: Check for MRTA Automatic Expungement (Best outcome)
-  if (offenseType === "possession" && possessionAmount === "yes") {
+  if (offenseTypes.includes("possession") && possessionAmount === "yes") {
     // Possession of 3 ounces or less
     const convictionDate = getConvictionDate(convictionMonth, convictionYear);
     if (convictionDate && convictionDate < new Date('2021-03-31')) {

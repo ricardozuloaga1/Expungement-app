@@ -41,7 +41,7 @@ function determineEligibility(responses: any) {
   const {
     convictionState,
     hasMarijuanaConviction,
-    offenseType,
+    offenseTypes = [],
     convictionMonth,
     convictionYear,
     possessionAmount,
@@ -94,7 +94,7 @@ function determineEligibility(responses: any) {
   }
 
   // Check for MRTA Automatic Expungement (Best outcome)
-  if (offenseType === "possession" && possessionAmount === "yes") {
+  if (offenseTypes.includes("possession") && possessionAmount === "yes") {
     const convictionDate = getConvictionDate(convictionMonth, convictionYear);
     if (convictionDate && convictionDate < new Date('2021-03-31')) {
       automaticExpungement = true;
