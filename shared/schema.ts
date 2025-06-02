@@ -75,11 +75,26 @@ export const premiumSubscriptions = pgTable("premium_subscriptions", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Education system tables
+export const userProgress = pgTable("user_progress", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  completedModules: text("completed_modules").array().default([]),
+  moduleScores: jsonb("module_scores").default({}),
+  achievements: text("achievements").array().default([]),
+  totalTimeSpent: integer("total_time_spent").default(0), // in minutes
+  lastStudyDate: timestamp("last_study_date"),
+  currentStreak: integer("current_streak").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Relations
-export const usersRelations = relations(users, ({ many }) => ({
+export const usersRelations = relations(users, ({ many, one }) => ({
   questionnaireResponses: many(questionnaireResponses),
   eligibilityResults: many(eligibilityResults),
   premiumSubscriptions: many(premiumSubscriptions),
+  progress: one(userProgress),
 }));
 
 export const questionnaireResponsesRelations = relations(questionnaireResponses, ({ one, many }) => ({
@@ -104,6 +119,13 @@ export const eligibilityResultsRelations = relations(eligibilityResults, ({ one 
 export const premiumSubscriptionsRelations = relations(premiumSubscriptions, ({ one }) => ({
   user: one(users, {
     fields: [premiumSubscriptions.userId],
+    references: [users.id],
+  }),
+}));
+
+export const userProgressRelations = relations(userProgress, ({ one }) => ({
+  user: one(users, {
+    fields: [userProgress.userId],
     references: [users.id],
   }),
 }));
