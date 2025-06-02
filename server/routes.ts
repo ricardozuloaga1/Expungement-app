@@ -481,6 +481,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.sendFile('/home/runner/workspace/client/public/test-pdf-generation.html');
   });
 
+  app.get('/test-document-templates.html', (req, res) => {
+    res.sendFile('/home/runner/workspace/test-document-templates.html');
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
