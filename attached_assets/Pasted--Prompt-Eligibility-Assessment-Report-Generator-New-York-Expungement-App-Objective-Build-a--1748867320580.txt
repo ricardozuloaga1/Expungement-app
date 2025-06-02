@@ -1,0 +1,93 @@
+🧾 Prompt: Eligibility Assessment Report Generator (New York Expungement App)
+🎯 Objective:
+Build a feature that automatically generates a downloadable Eligibility Assessment Report in PDF format at the end of the user's questionnaire. This report should:
+
+Clearly state the user’s eligibility outcome.
+
+Reference the specific New York laws that apply.
+
+Justify the result based on the facts the user submitted.
+
+Be formatted to resemble a professional legal memorandum or attorney letterhead-style analysis.
+
+Be easy to customize and update as laws evolve.
+
+📋 Report Contents (Structure)
+Each report should include the following sections:
+
+Header
+App/brand logo + name (e.g., “NY Record Relief – Eligibility Report”)
+
+Date generated
+
+User’s name (from input)
+
+County and state
+
+Unique report ID
+
+Section 1: Executive Summary
+Short paragraph summarizing outcome:
+
+“Based on the information you provided, you are likely eligible for expungement of your marijuana-related conviction under New York's Marihuana Regulation and Taxation Act (MRTA), enacted in 2021.”
+
+Section 2: Statutory Basis for Eligibility
+Pull from conditional rules applied during the flow.
+
+Include precise citations, e.g.:
+
+“Your conviction for unlawful possession under Penal Law § 221.05, which occurred prior to March 31, 2021, is eligible for automatic expungement under the MRTA, codified in Criminal Procedure Law § 160.50(3)(k).”
+
+“You are not currently disqualified under CPL § 160.59, which allows petition-based sealing where the individual has no more than two convictions and no new convictions in the last 10 years.”
+
+Section 3: Analysis of Your Inputs
+Display the logic like a legal memo. Example:
+
+Offense Provided: Unlawful Possession (PL § 221.05)
+
+Conviction Year: 2017
+
+Sentence Completed: Yes
+
+New Convictions?: No
+
+Conclusion: This offense is eligible for automatic expungement under MRTA. No further action may be required, though you may request documentation from the court to confirm sealing.
+
+Section 4: Next Steps
+Based on outcome:
+
+If automatic:
+“You may already have your record expunged. We recommend you request a current RAP sheet to confirm. We can help.”
+
+If sealing (Clean Slate):
+“Your conviction is scheduled to be sealed automatically under New York's Clean Slate Act on November 16, 2024, provided you remain conviction-free.”
+
+If petition-based:
+“You appear eligible to file a petition under CPL § 160.59. We can help generate those forms.”
+
+If ineligible:
+“You are currently not eligible for relief. However, based on your conviction date, you may become eligible in [X] months. We recommend you return after that date.”
+
+Footer
+Legal disclaimer:
+
+“This report is generated based on user-submitted data and is not legal advice. Eligibility is subject to final court determination. For personalized legal counsel, consult an attorney licensed in New York State.”
+
+Include support contact or referral option
+
+🧠 Logic Requirements
+Use the same eligibility logic already implemented in the frontend/backend questionnaire flow.
+
+Dynamically pull in statutory references based on the rules triggered.
+
+Match user facts to legal language in clean bullet points.
+
+Auto-generate and render report in clean PDF format (e.g. via Puppeteer or html2pdf.js).
+
+🧰 Tools (Suggested)
+PDF generation: html2pdf.js, jsPDF, or server-side PDFKit (Node.js)
+
+Templating: Handlebars, EJS, or simple JSX → HTML → PDF pipeline
+
+Styling: Clean serif font (like Georgia), watermark logo, gray borders
+
