@@ -1,0 +1,63 @@
+🛠️ Prompt for Replit AI — Fix and Upgrade Eligibility Report Output
+
+⸻
+
+❗ What’s Wrong with the Current Test Reports
+
+The current PDF reports generated from the analyzeEligibility() function have several key issues that affect their credibility, usefulness, and presentation:
+	1.	Lack of Legal Depth
+	•	The reports only state a one-line summary of the result (“Eligible under Clean Slate Act”) without explaining why.
+	•	There are no references to relevant statutes like MRTA, CPL § 160.59, or Clean Slate Act CPL § 160.57.
+	2.	No Case Fact Summary
+	•	The report does not restate the key facts that led to the eligibility determination (e.g., conviction type, year, number of offenses, sentence status).
+	•	This makes the report feel generic and ungrounded in the user’s input.
+	3.	Poor Formatting
+	•	The formatting is inconsistent (some fields are clipped, spacing is off).
+	•	Headers and sections blend together; reports are hard to scan quickly.
+	•	No visual hierarchy or separation between key content sections.
+	4.	Incomplete Use of EligibilityAnalysis
+	•	The report fails to display most of the rich data from the eligibilityDetails and recommendations fields.
+	•	It ignores useful fields like waitingPeriodRequired, petitionApplicable, and excludedOffense.
+	5.	Minimal Explanation of Outcome
+	•	The logic leading to the outcome is not articulated.
+	•	Example: “Eligible for sealing” is written, but the report doesn’t say, “You were convicted of a misdemeanor more than 3 years ago, and you have no other convictions — this qualifies you under CPL § 160.57 (Clean Slate Act).”
+	6.	Insufficient Professional Tone
+	•	The current reports feel like a testing artifact, not something legally serious.
+	•	They’re missing the tone of a structured, human-reviewed legal assessment.
+
+⸻
+
+✅ What You Should Do
+
+Refactor the report generation so that it produces a realistic, professionally styled eligibility report with:
+
+🧾 Sections
+	1.	Header
+	•	Title: “NY Record Relief – Eligibility Assessment Report”
+	•	Report ID, date, user’s county or jurisdiction
+	2.	Executive Summary
+	•	Concise statement of outcome in full sentences
+	•	Example: “Based on the information you provided, you are eligible for automatic expungement under the Marihuana Regulation and Taxation Act (2021).”
+	3.	Case Facts
+	•	Conviction offense code and level
+	•	Conviction year
+	•	Sentence completion status
+	•	Whether user is on supervision
+	•	Whether they have other convictions
+	•	If excluded offenses were found
+	4.	Legal Analysis
+	•	Explain which rule applied (MRTA, Clean Slate, or CPL § 160.59)
+	•	Quote relevant statute names and numbers
+	•	If not eligible, explain disqualification and wait time if applicable
+	5.	Recommendations
+	•	Pull from the recommendations[] array
+	•	Use a numbered or bulleted list
+	•	Include titles and descriptions
+	6.	Legal Disclaimer
+	•	Include standard language that this is not legal advice
+
+🎨 Design Improvements
+	•	Use spacing, bold text, and horizontal rules to separate sections
+	•	Add serif fonts (Georgia or similar) for legal tone
+	•	Add optional logo/header graphic
+	•	Output clean, aligned PDF pages (1–2 pages max)

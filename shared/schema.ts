@@ -57,6 +57,7 @@ export const eligibilityResults = pgTable("eligibility_results", {
   userId: varchar("user_id").notNull().references(() => users.id),
   questionnaireResponseId: integer("questionnaire_response_id").notNull().references(() => questionnaireResponses.id),
   automaticExpungement: boolean("automatic_expungement").default(false),
+  automaticSealing: boolean("automatic_sealing").default(false),
   petitionBasedSealing: boolean("petition_based_sealing").default(false),
   eligibilityDetails: jsonb("eligibility_details"),
   recommendations: jsonb("recommendations"),

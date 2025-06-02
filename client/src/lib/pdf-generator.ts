@@ -3,11 +3,13 @@ import type { EligibilityResult, User } from "@shared/schema";
 
 function generateExecutiveSummary(result: EligibilityResult): string {
   if (result.automaticExpungement) {
-    return "Based on the information you provided, you appear to be eligible for automatic expungement of your marijuana-related conviction under New York's Marihuana Regulation and Taxation Act (MRTA), enacted in 2021. Your conviction may have already been automatically expunged by the state, though verification with the court is recommended to obtain proper documentation.";
+    return "Based on the information you provided, you are eligible for automatic expungement of your marijuana-related conviction under New York's Marihuana Regulation and Taxation Act (MRTA), enacted in 2021. Your conviction should have already been automatically expunged by the state, though verification with the court is recommended to obtain proper documentation.";
+  } else if (result.automaticSealing) {
+    return "Based on the information you provided, you are eligible for automatic sealing under New York's Clean Slate Act (CPL § 160.57). Your record will be automatically sealed without any action required on your part, effective November 16, 2024.";
   } else if (result.petitionBasedSealing) {
     return "Based on your responses, you may be eligible for petition-based record sealing under New York Criminal Procedure Law § 160.59. This process requires filing a formal petition with the court and obtaining judicial approval, but offers significant benefits in limiting public access to your criminal record.";
   } else {
-    return "Based on the information provided, you do not currently appear to qualify for automatic expungement or sealing under existing New York State laws. However, your eligibility may change over time as waiting periods are satisfied or new legislation is enacted. We recommend periodic reassessment of your status.";
+    return "Based on the information provided, you do not currently qualify for automatic expungement or sealing under existing New York State laws. However, your eligibility may change over time as waiting periods are satisfied or new legislation is enacted. We recommend periodic reassessment of your status.";
   }
 }
 
@@ -18,12 +20,16 @@ function generateStatutoryBasis(result: EligibilityResult, questionnaireData?: a
     basis = `Your marijuana-related conviction qualifies for automatic expungement under the Marihuana Regulation and Taxation Act (MRTA), specifically codified in New York Criminal Procedure Law § 160.50(3)(k). This provision mandates automatic expungement of convictions for unlawful possession of marihuana under Penal Law § 221.05, § 221.10, § 221.15, § 221.35, and § 221.40 that occurred prior to March 31, 2021.
 
 The MRTA became effective on March 31, 2021, and required automatic expungement without the need for individual petitions or court appearances. Under CPL § 160.50(3)(k), qualifying records are automatically sealed and treated as if the arrest or conviction never occurred.`;
+  } else if (result.automaticSealing) {
+    basis = `Your conviction qualifies for automatic sealing under New York's Clean Slate Act, codified in Criminal Procedure Law § 160.57. This statute provides for automatic sealing of eligible criminal convictions effective November 16, 2024. The Clean Slate Act covers misdemeanor convictions after 3 years and felony convictions after 8 years from sentence completion, provided certain conditions are met.
+
+Under CPL § 160.57, qualifying records are automatically sealed without requiring individual petitions or court appearances. Once sealed, these records are not accessible to most employers or landlords, though certain exceptions exist for law enforcement and specific regulated industries.`;
   } else if (result.petitionBasedSealing) {
     basis = `Your case appears to meet the criteria for petition-based sealing under New York Criminal Procedure Law § 160.59. This statute allows individuals to petition for sealing of criminal records where: (1) the individual has no more than two eligible convictions, (2) at least ten years have passed since the individual's last conviction or release from incarceration (whichever is later), and (3) the individual has no pending criminal charges.
 
 CPL § 160.59 excludes certain serious offenses including sex offenses under Article 130 of the Penal Law and violent felony offenses as defined in CPL § 70.02. The statute provides discretionary relief, meaning the court will consider factors including the nature of the offense, the applicant's rehabilitation, and public safety considerations.`;
   } else {
-    basis = `Based on current New York State law, your conviction does not qualify for automatic relief under the MRTA (CPL § 160.50(3)(k)) or the Clean Slate Act (CPL § 160.58). You may not currently meet the eligibility criteria for petition-based sealing under CPL § 160.59, which requires specific timing and conviction history requirements.
+    basis = `Based on current New York State law, your conviction does not qualify for automatic relief under the MRTA (CPL § 160.50(3)(k)) or the Clean Slate Act (CPL § 160.57). You may not currently meet the eligibility criteria for petition-based sealing under CPL § 160.59, which requires specific timing and conviction history requirements.
 
 Future eligibility may be possible under the Clean Slate Act, which will automatically seal certain eligible convictions beginning November 16, 2024, provided waiting periods are satisfied and no disqualifying convictions exist.`;
   }
