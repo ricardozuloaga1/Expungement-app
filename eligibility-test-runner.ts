@@ -41,7 +41,7 @@ const testCases = [
     expectedStatus: 'automatic_sealing'
   },
   {
-    name: '📝 Petition Sealing – Felony 2012',
+    name: '🔐 Clean Slate – Felony Sale 2012 (8+ years)',
     input: {
       convictionState: 'ny',
       hasMarijuanaConviction: 'yes',
@@ -60,7 +60,7 @@ const testCases = [
       hasExcludedOffenses: 'no',
       sentenceCompleted: 'yes',
     },
-    expectedStatus: 'petition_sealing'
+    expectedStatus: 'automatic_sealing'
   },
   {
     name: '❌ Not Eligible – Too Recent',
@@ -129,6 +129,28 @@ const testCases = [
       sentenceCompleted: 'yes',
     },
     expectedStatus: 'automatic_sealing'
+  },
+  {
+    name: '📝 Petition Sealing – Recent Felony (10+ years, multiple convictions)',
+    input: {
+      convictionState: 'ny',
+      hasMarijuanaConviction: 'yes',
+      offenseTypes: ['cultivation'],
+      convictionMonth: '01',
+      convictionYear: '2010',
+      convictionLevel: 'felony',
+      servedTime: 'yes',
+      releaseMonth: '06',
+      releaseYear: '2012',
+      tenYearsPassed: 'yes',
+      totalConvictions: '2',
+      totalFelonies: '1',
+      otherConvictions: 'yes', // This prevents Clean Slate eligibility
+      onSupervision: 'no',
+      hasExcludedOffenses: 'no',
+      sentenceCompleted: 'yes',
+    },
+    expectedStatus: 'petition_sealing'
   }
 ];
 
