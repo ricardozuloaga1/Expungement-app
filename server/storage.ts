@@ -3,6 +3,7 @@ import {
   questionnaireResponses,
   eligibilityResults,
   premiumSubscriptions,
+  userProgress,
   type User,
   type UpsertUser,
   type InsertQuestionnaireResponse,
@@ -11,6 +12,8 @@ import {
   type EligibilityResult,
   type InsertPremiumSubscription,
   type PremiumSubscription,
+  type InsertUserProgress,
+  type UserProgress,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc } from "drizzle-orm";
@@ -36,6 +39,10 @@ export interface IStorage {
   // Premium operations
   createPremiumSubscription(subscription: InsertPremiumSubscription): Promise<PremiumSubscription>;
   getUserPremiumSubscription(userId: string): Promise<PremiumSubscription | undefined>;
+  
+  // Education operations
+  getUserProgress(userId: string): Promise<UserProgress | undefined>;
+  upsertUserProgress(progress: InsertUserProgress): Promise<UserProgress>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -137,6 +144,27 @@ export class DatabaseStorage implements IStorage {
       .where(eq(premiumSubscriptions.userId, userId))
       .orderBy(desc(premiumSubscriptions.createdAt));
     return subscription;
+  }
+
+  // Education operations
+  async getUserProgress(userId: string): Promise<UserProgress | undefined> {
+    const [progress] = await db.select().from(userProgress).where(eq(userProgress.userId, userId));
+    return progress;
+  }
+
+  async upsertUserProgress(progressData: InsertUserProgress): Promise<UserProgress> {
+    const [progress] = await db
+      .insert(userProgress)
+      .values(progressData)
+      .onConflictDoUpdate({
+        target: userProgress.userId,
+        set: {
+          ...progressData,
+          updatedAt: new Date(),
+        },
+      })
+      .returning();
+    return progress;
   }
 }
 

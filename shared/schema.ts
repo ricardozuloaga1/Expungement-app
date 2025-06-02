@@ -147,6 +147,12 @@ export const insertPremiumSubscriptionSchema = createInsertSchema(premiumSubscri
   createdAt: true,
 });
 
+export const insertUserProgressSchema = createInsertSchema(userProgress).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Types
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
@@ -156,3 +162,5 @@ export type InsertEligibilityResult = z.infer<typeof insertEligibilityResultSche
 export type EligibilityResult = typeof eligibilityResults.$inferSelect;
 export type InsertPremiumSubscription = z.infer<typeof insertPremiumSubscriptionSchema>;
 export type PremiumSubscription = typeof premiumSubscriptions.$inferSelect;
+export type InsertUserProgress = z.infer<typeof insertUserProgressSchema>;
+export type UserProgress = typeof userProgress.$inferSelect;

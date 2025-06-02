@@ -357,6 +357,126 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Serve the test HTML file
+  // Education routes
+  app.get('/api/education/progress', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const progress = await storage.getUserProgress(userId);
+      
+      if (!progress) {
+        // Return default progress for new users
+        return res.json({
+          userId,
+          completedModules: [],
+          moduleScores: {},
+          achievements: [],
+          totalTimeSpent: 0,
+          lastStudyDate: null,
+          currentStreak: 0,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        });
+      }
+      
+      res.json(progress);
+    } catch (error) {
+      console.error("Error fetching education progress:", error);
+      res.status(500).json({ message: "Failed to fetch education progress" });
+    }
+  });
+
+  app.post('/api/education/progress', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { moduleId, completed, score, timeSpent } = req.body;
+      
+      // Get existing progress
+      let existingProgress = await storage.getUserProgress(userId);
+      
+      if (!existingProgress) {
+        // Create new progress record
+        existingProgress = {
+          userId,
+          completedModules: [],
+          moduleScores: {},
+          achievements: [],
+          totalTimeSpent: 0,
+          lastStudyDate: null,
+          currentStreak: 0
+        } as any;
+      }
+
+      // Update progress data
+      const updatedCompletedModules = completed && !existingProgress.completedModules.includes(moduleId)
+        ? [...existingProgress.completedModules, moduleId]
+        : existingProgress.completedModules;
+
+      const updatedModuleScores = score !== undefined
+        ? { ...existingProgress.moduleScores, [moduleId]: score }
+        : existingProgress.moduleScores;
+
+      const updatedTotalTimeSpent = (existingProgress.totalTimeSpent || 0) + (timeSpent || 0);
+
+      // Calculate streak
+      const today = new Date();
+      const lastStudy = existingProgress.lastStudyDate ? new Date(existingProgress.lastStudyDate) : null;
+      let currentStreak = existingProgress.currentStreak || 0;
+
+      if (lastStudy) {
+        const daysDiff = Math.floor((today.getTime() - lastStudy.getTime()) / (1000 * 60 * 60 * 24));
+        if (daysDiff === 1) {
+          currentStreak += 1;
+        } else if (daysDiff > 1) {
+          currentStreak = 1;
+        }
+      } else {
+        currentStreak = 1;
+      }
+
+      // Simple achievement checking
+      const newAchievements = [];
+      const existingAchievementIds = existingProgress.achievements || [];
+      
+      // First module achievement
+      if (updatedCompletedModules.length >= 1 && !existingAchievementIds.includes('first-module')) {
+        newAchievements.push('first-module');
+      }
+      
+      // Perfect score achievement
+      if (score === 100 && !existingAchievementIds.includes('quiz-master')) {
+        newAchievements.push('quiz-master');
+      }
+      
+      // Multiple modules achievement
+      if (updatedCompletedModules.length >= 3 && !existingAchievementIds.includes('knowledge-seeker')) {
+        newAchievements.push('knowledge-seeker');
+      }
+      
+      // Study streak achievement
+      if (currentStreak >= 7 && !existingAchievementIds.includes('streak-warrior')) {
+        newAchievements.push('streak-warrior');
+      }
+
+      const updatedAchievements = [...existingAchievementIds, ...newAchievements];
+
+      // Save updated progress
+      const updatedProgress = await storage.upsertUserProgress({
+        userId,
+        completedModules: updatedCompletedModules,
+        moduleScores: updatedModuleScores,
+        achievements: updatedAchievements,
+        totalTimeSpent: updatedTotalTimeSpent,
+        lastStudyDate: today,
+        currentStreak
+      });
+
+      res.json(updatedProgress);
+    } catch (error) {
+      console.error("Error updating education progress:", error);
+      res.status(500).json({ message: "Failed to update education progress" });
+    }
+  });
+
   app.get('/test-pdf-generation.html', (req, res) => {
     res.sendFile('/home/runner/workspace/client/public/test-pdf-generation.html');
   });
