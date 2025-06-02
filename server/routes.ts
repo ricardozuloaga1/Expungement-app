@@ -352,6 +352,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Serve the test HTML file
+  app.get('/test-pdf-generation.html', (req, res) => {
+    res.sendFile('/home/runner/workspace/client/public/test-pdf-generation.html');
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
