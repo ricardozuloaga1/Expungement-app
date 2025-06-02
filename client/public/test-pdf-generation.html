@@ -357,13 +357,13 @@
             doc.setFont(undefined, 'normal');
             let summary = "";
             if (result.automaticExpungement) {
-                summary = "Based on the test parameters, this case qualifies for automatic expungement under MRTA 2021.";
+                summary = "Based on the information provided, you are eligible for automatic expungement of your marijuana-related conviction under New York's Marihuana Regulation and Taxation Act (MRTA), enacted in 2021. Your conviction should have already been automatically expunged by the state.";
             } else if (result.automaticSealing) {
-                summary = "Based on the test parameters, this case qualifies for automatic sealing under the Clean Slate Act.";
+                summary = "Based on the information provided, you are eligible for automatic sealing under New York's Clean Slate Act (CPL § 160.57). Your record will be automatically sealed without any action required on your part, effective November 16, 2024.";
             } else if (result.petitionBasedSealing) {
-                summary = "Based on the test parameters, this case qualifies for petition-based record sealing.";
+                summary = "Based on your responses, you may be eligible for petition-based record sealing under New York Criminal Procedure Law § 160.59. This process requires filing a formal petition with the court.";
             } else {
-                summary = "Based on the test parameters, this case does not currently qualify for relief.";
+                summary = "Based on the information provided, you do not currently qualify for automatic expungement or sealing under existing New York State laws. However, your eligibility may change over time as waiting periods are satisfied.";
             }
             
             const summaryLines = doc.splitTextToSize(summary, 170);
@@ -372,14 +372,90 @@
                 yPos += 6;
             });
 
+            // Case Facts Section
+            yPos += 10;
+            doc.setFont(undefined, 'bold');
+            doc.text('CASE FACTS', 20, yPos);
+            yPos += 8;
+            doc.setFont(undefined, 'normal');
+            
+            let caseFacts = "Based on your questionnaire responses:\n\n";
+            if (questionnaireData.convictionLevel) {
+                caseFacts += `• Conviction Level: ${questionnaireData.convictionLevel}\n`;
+            }
+            if (questionnaireData.convictionYear) {
+                caseFacts += `• Year of Conviction: ${questionnaireData.convictionYear}\n`;
+            }
+            if (questionnaireData.offenseTypes) {
+                caseFacts += `• Type of Offense: ${Array.isArray(questionnaireData.offenseTypes) ? questionnaireData.offenseTypes.join(', ') : questionnaireData.offenseTypes}\n`;
+            }
+            if (questionnaireData.servedTime) {
+                caseFacts += `• Served Time in Prison: ${questionnaireData.servedTime === 'yes' ? 'Yes' : 'No'}\n`;
+            }
+            if (questionnaireData.otherConvictions) {
+                caseFacts += `• Other Convictions: ${questionnaireData.otherConvictions === 'yes' ? 'Yes' : 'No'}\n`;
+            }
+            
+            const caseFactsLines = doc.splitTextToSize(caseFacts, 170);
+            caseFactsLines.forEach(line => {
+                if (yPos > 250) {
+                    doc.addPage();
+                    yPos = 20;
+                }
+                doc.text(line, 20, yPos);
+                yPos += 6;
+            });
+
+            // Legal Analysis Section
+            yPos += 10;
+            doc.setFont(undefined, 'bold');
+            doc.text('LEGAL ANALYSIS', 20, yPos);
+            yPos += 8;
+            doc.setFont(undefined, 'normal');
+            
+            let legalAnalysis = "";
+            if (result.automaticExpungement) {
+                legalAnalysis = `Under the Marihuana Regulation and Taxation Act (MRTA), specifically CPL § 160.50(3)(k), your marijuana possession conviction from ${questionnaireData.convictionYear || 'before 2021'} qualifies for automatic expungement. The law requires automatic expungement of qualifying marijuana convictions that occurred prior to March 31, 2021, without requiring individual petitions.`;
+            } else if (result.automaticSealing) {
+                const convictionType = questionnaireData.convictionLevel || 'conviction';
+                const yearsSince = new Date().getFullYear() - parseInt(questionnaireData.convictionYear || '2020');
+                const requiredYears = convictionType === 'felony' ? 8 : 3;
+                legalAnalysis = `Under New York's Clean Slate Act (CPL § 160.57), your ${convictionType} conviction from ${questionnaireData.convictionYear} qualifies for automatic sealing. The law requires ${requiredYears} years to pass since sentence completion, and approximately ${yearsSince} years have passed. Since you indicated no other disqualifying convictions, your record will be automatically sealed effective November 16, 2024.`;
+            } else if (result.petitionBasedSealing) {
+                legalAnalysis = `Your case may qualify for petition-based sealing under CPL § 160.59. This statute allows sealing where: (1) you have no more than two eligible convictions, (2) at least ten years have passed since conviction or release, and (3) you have no pending charges. However, this requires court approval and is discretionary.`;
+            } else {
+                const reason = result.eligibilityDetails.primaryReason;
+                if (reason.includes('time has passed')) {
+                    legalAnalysis = `Your conviction does not currently qualify because insufficient time has passed under the Clean Slate Act. ${reason} The Clean Slate Act requires 3 years for misdemeanors and 8 years for felonies from sentence completion.`;
+                } else if (reason.includes('Additional convictions')) {
+                    legalAnalysis = `Your case is not eligible for automatic sealing under the Clean Slate Act because you have multiple convictions. The Clean Slate Act only applies to individuals with single eligible convictions, excluding those with multiple convictions or certain serious offenses.`;
+                } else {
+                    legalAnalysis = `Based on the information provided, your case does not meet the current eligibility criteria under MRTA (for marijuana expungement), Clean Slate Act (for automatic sealing), or CPL § 160.59 (for petition-based sealing). ${reason}`;
+                }
+            }
+            
+            const analysisLines = doc.splitTextToSize(legalAnalysis, 170);
+            analysisLines.forEach(line => {
+                if (yPos > 250) {
+                    doc.addPage();
+                    yPos = 20;
+                }
+                doc.text(line, 20, yPos);
+                yPos += 6;
+            });
+
             // Primary Reason
             yPos += 10;
             doc.setFont(undefined, 'bold');
-            doc.text('PRIMARY REASON', 20, yPos);
+            doc.text('DETERMINATION', 20, yPos);
             yPos += 8;
             doc.setFont(undefined, 'normal');
             const reasonLines = doc.splitTextToSize(result.eligibilityDetails.primaryReason, 170);
             reasonLines.forEach(line => {
+                if (yPos > 250) {
+                    doc.addPage();
+                    yPos = 20;
+                }
                 doc.text(line, 20, yPos);
                 yPos += 6;
             });
