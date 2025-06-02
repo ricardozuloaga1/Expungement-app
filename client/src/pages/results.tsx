@@ -116,12 +116,19 @@ export default function Results() {
             <CheckCircle className="w-8 h-8" />
           </div>
           <h1 className="text-4xl font-bold text-neutral-dark mb-4">
-            {result.automaticExpungement ? "Great news!" : "Good news!"}
+            {result.automaticExpungement 
+              ? "Great news!" 
+              : result.petitionBasedSealing 
+                ? "Good news!" 
+                : "Assessment Complete"
+            }
           </h1>
           <p className="text-xl text-neutral-medium">
             {result.automaticExpungement 
               ? "You appear to qualify for automatic marijuana record expungement in New York"
-              : "You appear to qualify for marijuana record sealing through petition in New York"
+              : result.petitionBasedSealing 
+                ? "You appear to qualify for marijuana record sealing through petition in New York"
+                : "Based on your responses, you may not currently qualify for available relief options"
             }
           </p>
         </div>
