@@ -341,7 +341,9 @@
             doc.setFontSize(11);
             doc.text(`Report ID: ${reportId}`, 20, 55);
             doc.text(`Generated: ${reportDate}`, 120, 55);
-            doc.text(`Test Case: ${testName}`, 20, 65);
+            // Clean the test name to avoid encoding issues
+            const cleanTestName = testName.replace(/[^\w\s\-\(\)\+]/g, '');
+            doc.text(`Test Case: ${cleanTestName}`, 20, 65);
             doc.text('Jurisdiction: New York State', 20, 75);
 
             // Executive Summary
