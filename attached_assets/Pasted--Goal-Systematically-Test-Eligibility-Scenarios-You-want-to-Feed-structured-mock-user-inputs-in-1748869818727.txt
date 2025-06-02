@@ -1,0 +1,161 @@
+🧪 Goal: Systematically Test Eligibility Scenarios
+You want to:
+
+Feed structured mock user inputs into analyzeEligibility()
+
+Validate that the outcomes are correct
+
+Extract the key parts of the result (e.g., eligibility status, primary reason, recommendation list)
+
+Possibly automate this for bulk or regression testing
+
+✅ Step-by-Step Procedure
+🔹 Step 1: Create a Test File
+In Replit or your local dev environment:
+
+Create a new file:
+eligibilityTestRunner.ts (or .js if you're using plain JS)
+
+🔹 Step 2: Define Test Scenarios
+Write an array of test cases in JSON-like objects, including input and the expected outcome:
+
+ts
+Copy
+Edit
+import { analyzeEligibility } from './eligibilityEngine';
+
+const testCases = [
+  {
+    name: '✅ MRTA Expungement – PL 221.05 (2016)',
+    input: {
+      offenseTypes: ['possession'],
+      possessionAmount: 'yes',
+      convictionMonth: '01',
+      convictionYear: '2016',
+      receivedNotice: 'no',
+      convictionLevel: 'misdemeanor',
+      servedTime: 'no',
+      otherConvictions: 'no',
+      onSupervision: 'no',
+      hasExcludedOffenses: 'no',
+      sentenceCompleted: 'yes',
+    },
+    expectedStatus: 'automatic_expungement'
+  },
+  {
+    name: '🔐 Clean Slate – Misdemeanor 2019',
+    input: {
+      offenseTypes: ['possession'],
+      possessionAmount: 'yes',
+      convictionMonth: '03',
+      convictionYear: '2019',
+      convictionLevel: 'misdemeanor',
+      servedTime: 'no',
+      releaseMonth: null,
+      releaseYear: null,
+      onSupervision: 'no',
+      otherConvictions: 'no',
+      hasExcludedOffenses: 'no',
+      sentenceCompleted: 'yes',
+    },
+    expectedStatus: 'automatic_sealing'
+  },
+  {
+    name: '📝 Petition Sealing – Felony 2012',
+    input: {
+      offenseTypes: ['sale'],
+      convictionMonth: '05',
+      convictionYear: '2012',
+      convictionLevel: 'felony',
+      servedTime: 'yes',
+      releaseMonth: '08',
+      releaseYear: '2014',
+      tenYearsPassed: 'yes',
+      totalConvictions: '1',
+      totalFelonies: '1',
+      otherConvictions: 'no',
+      onSupervision: 'no',
+      hasExcludedOffenses: 'no',
+      sentenceCompleted: 'yes',
+    },
+    expectedStatus: 'petition_sealing'
+  },
+  {
+    name: '❌ Not Eligible – Too Recent',
+    input: {
+      offenseTypes: ['possession'],
+      possessionAmount: 'yes',
+      convictionMonth: '12',
+      convictionYear: '2022',
+      convictionLevel: 'misdemeanor',
+      servedTime: 'no',
+      onSupervision: 'no',
+      otherConvictions: 'no',
+      hasExcludedOffenses: 'no',
+      sentenceCompleted: 'yes',
+    },
+    expectedStatus: 'not_eligible'
+  }
+];
+🔹 Step 3: Run Each Case & Print Result
+Loop through the scenarios and extract meaningful data:
+
+ts
+Copy
+Edit
+testCases.forEach((test, index) => {
+  const result = analyzeEligibility(test.input);
+  console.log(`\nTest ${index + 1}: ${test.name}`);
+  console.log(`Expected Status: ${test.expectedStatus}`);
+  console.log(`Actual Status: ${result.eligibilityStatus}`);
+  console.log(`Primary Reason: ${result.eligibilityDetails.primaryReason}`);
+  console.log(`Recommendations:`);
+
+  result.recommendations.forEach((rec, i) => {
+    console.log(`  ${i + 1}. ${rec.title} – ${rec.description}`);
+  });
+
+  const pass = result.eligibilityStatus === test.expectedStatus;
+  console.log(`✅ PASS: ${pass}\n`);
+});
+🔹 Step 4: Run the Script
+In Replit:
+
+Create a .replit file (if not already)
+
+Add the line:
+
+bash
+Copy
+Edit
+run = "ts-node eligibilityTestRunner.ts"
+Or run in your terminal with:
+
+bash
+Copy
+Edit
+npx ts-node eligibilityTestRunner.ts
+🔹 Step 5: Add Assertions (Optional for CI)
+You can replace the print logic with assert statements or integrate with Jest:
+
+ts
+Copy
+Edit
+import assert from 'assert';
+assert.strictEqual(result.eligibilityStatus, test.expectedStatus);
+🧾 What You Extract per Test
+✅ eligibilityStatus (e.g., automatic_expungement)
+
+⚖️ eligibilityDetails.primaryReason (to ensure correct rule triggered)
+
+📌 eligibilityDetails.cleanSlateApplicable, petitionApplicable, etc.
+
+💬 recommendations[] — make sure priority and advice match scenario
+
+🧰 Optional Enhancements
+Write results to a CSV or JSON file for audit
+
+Add test cases for edge conditions (missing conviction date, ambiguous responses)
+
+Color-code pass/fail results in terminal with chalk
+
