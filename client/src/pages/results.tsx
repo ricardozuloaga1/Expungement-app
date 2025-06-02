@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PremiumModal } from "@/components/premium-modal";
 import { generatePDFReport } from "@/lib/pdf-generator";
+import { DocumentGenerator } from "@/components/document-generator";
 import { CheckCircle, Clock, FileText, Star, Download, ArrowLeft } from "lucide-react";
 import { Link } from "wouter";
 import type { EligibilityResult } from "@shared/schema";
@@ -39,7 +40,15 @@ export default function Results() {
     enabled: !!user,
   });
 
+  const { data: questionnaireResponses = [] } = useQuery({
+    queryKey: ["/api/questionnaire/user"],
+    enabled: !!user,
+  });
+
   const result = eligibilityResults.find(r => r.id === resultId);
+  const questionnaireResponse = questionnaireResponses.find((q: any) => 
+    eligibilityResults.some(er => er.questionnaireResponseId === q.id && er.id === resultId)
+  );
 
   const handleDownloadReport = () => {
     if (!result || !user) return;
@@ -232,6 +241,25 @@ export default function Results() {
                 </div>
               ))}
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Legal Documents */}
+        <Card className="bg-white shadow-lg mb-8">
+          <CardHeader>
+            <CardTitle className="text-2xl">Legal Documents</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <DocumentGenerator 
+              eligibilityStatus={
+                result.automaticExpungement ? 'automatic_expungement' :
+                result.automaticSealing ? 'automatic_sealing' :
+                result.petitionBasedSealing ? 'petition_sealing' :
+                'not_eligible'
+              }
+              questionnaireData={questionnaireResponse}
+              user={user || null}
+            />
           </CardContent>
         </Card>
 
