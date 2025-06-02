@@ -1,183 +1,154 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { CheckCircle, Shield, Clock, FileText, Users } from "lucide-react";
-import { Link } from "wouter";
+import { AuthModal } from "@/components/auth-modal";
+import { Shield, Clock, Award, Play, Info, Lock } from "lucide-react";
 
 export default function Landing() {
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [isLoginMode, setIsLoginMode] = useState(false);
+
+  const handleStartAssessment = () => {
+    setIsLoginMode(false);
+    setShowAuthModal(true);
+  };
+
+  const handleSignIn = () => {
+    setIsLoginMode(true);
+    setShowAuthModal(true);
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      {/* Header */}
-      <header className="bg-white shadow-sm">
+    <div className="min-h-screen bg-background-light">
+      {/* Navigation Header */}
+      <nav className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <h1 className="text-xl font-bold text-primary">NY Expungement Helper</h1>
+              <div className="flex-shrink-0">
+                <h1 className="text-xl font-bold text-primary">NY Expungement Helper</h1>
+              </div>
             </div>
             <div className="flex items-center space-x-4">
-              <Button asChild variant="outline">
-                <Link href="/api/login">Sign In</Link>
+              <button className="text-neutral-medium hover:text-primary transition-colors">
+                <Info className="w-4 h-4 mr-2 inline" />
+                Help
+              </button>
+              <Button 
+                onClick={handleSignIn}
+                className="bg-primary text-white hover:bg-primary-dark"
+              >
+                Sign In
               </Button>
             </div>
           </div>
         </div>
-      </header>
+      </nav>
 
       {/* Hero Section */}
-      <main className="relative">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
-          <div className="text-center">
-            <h1 className="text-4xl tracking-tight font-extrabold text-gray-900 sm:text-5xl md:text-6xl">
-              <span className="block">Clear Your New York</span>
-              <span className="block text-primary">Marijuana Record</span>
-            </h1>
-            <p className="mt-3 max-w-md mx-auto text-base text-gray-500 sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
-              Find out if you qualify for automatic expungement in just minutes. Our expert system analyzes your eligibility under New York's latest marijuana laws.
-            </p>
-            <div className="mt-5 max-w-md mx-auto sm:flex sm:justify-center md:mt-8">
-              <div className="rounded-md shadow">
-                <Button asChild size="lg" className="w-full">
-                  <Link href="/api/login">Start Free Assessment</Link>
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Features Section */}
-        <div className="py-16 bg-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="lg:text-center">
-              <h2 className="text-base text-primary font-semibold tracking-wide uppercase">Features</h2>
-              <p className="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-900 sm:text-4xl">
-                Everything you need to clear your record
-              </p>
-            </div>
-
-            <div className="mt-10">
-              <dl className="space-y-10 md:space-y-0 md:grid md:grid-cols-3 md:gap-x-8 md:gap-y-10">
-                <div className="relative">
-                  <dt>
-                    <div className="absolute flex items-center justify-center h-12 w-12 rounded-md bg-primary text-white">
-                      <Shield className="h-6 w-6" aria-hidden="true" />
-                    </div>
-                    <p className="ml-16 text-lg leading-6 font-medium text-gray-900">Secure & Private</p>
-                  </dt>
-                  <dd className="mt-2 ml-16 text-base text-gray-500">
-                    Your information is protected with enterprise-grade security. We never share your data.
-                  </dd>
+      <section className="min-h-[calc(100vh-4rem)] flex flex-col">
+        <div className="flex flex-1">
+          {/* Left side - Content with gradient background */}
+          <div className="flex-1 bg-gradient-to-r from-blue-600 via-blue-500 to-blue-400 flex items-center">
+            <div className="px-4 sm:px-6 lg:px-8 py-20 w-full max-w-2xl">
+              <div className="text-white">
+                <h1 className="text-4xl lg:text-5xl font-bold mb-6 leading-tight">
+                  Clear Your New York Marijuana Record
+                </h1>
+                <p className="text-lg lg:text-xl mb-8 text-blue-100 leading-relaxed">
+                  Check if your conviction qualifies for automatic expungement under the MRTA (2021) and the Clean Slate Act (effective 2024). It only takes a few minutes.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4 mb-12">
+                  <Button 
+                    onClick={handleStartAssessment}
+                    className="bg-white text-blue-600 px-8 py-4 text-lg font-semibold hover:bg-gray-50 shadow-lg"
+                    size="lg"
+                  >
+                    <Play className="w-5 h-5 mr-2" />
+                    Start Free Assessment
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    className="border-2 border-white text-white px-8 py-4 text-lg font-semibold hover:bg-white hover:text-blue-600 bg-transparent"
+                    size="lg"
+                  >
+                    <Info className="w-5 h-5 mr-2" />
+                    Learn More
+                  </Button>
                 </div>
-
-                <div className="relative">
-                  <dt>
-                    <div className="absolute flex items-center justify-center h-12 w-12 rounded-md bg-secondary-green text-white">
-                      <CheckCircle className="h-6 w-6" aria-hidden="true" />
-                    </div>
-                    <p className="ml-16 text-lg leading-6 font-medium text-gray-900">Legal Accuracy</p>
-                  </dt>
-                  <dd className="mt-2 ml-16 text-base text-gray-500">
-                    Built by legal experts, our system analyzes the latest New York marijuana expungement laws.
-                  </dd>
-                </div>
-
-                <div className="relative">
-                  <dt>
-                    <div className="absolute flex items-center justify-center h-12 w-12 rounded-md bg-orange-500 text-white">
-                      <Clock className="h-6 w-6" aria-hidden="true" />
-                    </div>
-                    <p className="ml-16 text-lg leading-6 font-medium text-gray-900">5-Minute Assessment</p>
-                  </dt>
-                  <dd className="mt-2 ml-16 text-base text-gray-500">
-                    Get immediate results with our streamlined questionnaire designed for speed and accuracy.
-                  </dd>
-                </div>
-              </dl>
-            </div>
-          </div>
-        </div>
-
-        {/* How It Works Section */}
-        <div className="py-16 bg-gray-50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="lg:text-center">
-              <h2 className="text-base text-primary font-semibold tracking-wide uppercase">Process</h2>
-              <p className="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-900 sm:text-4xl">
-                How it works
-              </p>
-            </div>
-
-            <div className="mt-10">
-              <div className="space-y-10 md:space-y-0 md:grid md:grid-cols-3 md:gap-x-8 md:gap-y-10">
-                <div className="text-center">
-                  <div className="flex items-center justify-center h-16 w-16 rounded-full bg-primary text-white text-xl font-bold mx-auto">
-                    1
+                
+                {/* Trust Indicators */}
+                <div className="grid grid-cols-3 gap-6 text-center">
+                  <div>
+                    <Shield className="w-8 h-8 mx-auto mb-2 text-blue-200" />
+                    <p className="text-sm text-blue-100">Secure & Private</p>
                   </div>
-                  <h3 className="mt-6 text-lg leading-6 font-medium text-gray-900">Answer Questions</h3>
-                  <p className="mt-2 text-base text-gray-500">
-                    Complete our simple questionnaire about your marijuana-related conviction.
-                  </p>
-                </div>
-
-                <div className="text-center">
-                  <div className="flex items-center justify-center h-16 w-16 rounded-full bg-primary text-white text-xl font-bold mx-auto">
-                    2
+                  <div>
+                    <Clock className="w-8 h-8 mx-auto mb-2 text-blue-200" />
+                    <p className="text-sm text-blue-100">5-Minute Assessment</p>
                   </div>
-                  <h3 className="mt-6 text-lg leading-6 font-medium text-gray-900">Get Analysis</h3>
-                  <p className="mt-2 text-base text-gray-500">
-                    Our system analyzes your eligibility under current New York laws.
-                  </p>
-                </div>
-
-                <div className="text-center">
-                  <div className="flex items-center justify-center h-16 w-16 rounded-full bg-primary text-white text-xl font-bold mx-auto">
-                    3
+                  <div>
+                    <Award className="w-8 h-8 mx-auto mb-2 text-blue-200" />
+                    <p className="text-sm text-blue-100">Legal Accuracy</p>
                   </div>
-                  <h3 className="mt-6 text-lg leading-6 font-medium text-gray-900">Take Action</h3>
-                  <p className="mt-2 text-base text-gray-500">
-                    Receive detailed instructions and next steps for clearing your record.
-                  </p>
                 </div>
               </div>
             </div>
           </div>
+          
+          {/* Right side - Professional Image */}
+          <div className="hidden md:block flex-1 relative">
+            <img 
+              src="https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=1000&q=80"
+              alt="Professional legal consultant" 
+              className="w-full h-full object-cover object-center"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-blue-500/40 to-transparent"></div>
+          </div>
         </div>
+        
+        {/* Privacy Protection Bar - Full Width */}
+        <div className="bg-blue-800/80 backdrop-blur-sm border-t border-blue-400/30">
+          <div className="px-4 sm:px-6 lg:px-8 py-6">
+            <div className="flex items-center justify-center text-center">
+              <Lock className="w-6 h-6 text-white mr-3 flex-shrink-0" />
+              <div>
+                <h4 className="text-lg font-semibold text-white">Your Privacy is Protected</h4>
+                <p className="text-sm text-blue-100">
+                  Enterprise-grade encryption with 256-bit SSL. We never share your data.
+                </p>
+                <p className="text-xs text-blue-200 mt-1">
+                  GDPR & NY Privacy Compliant
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        {/* Mobile version - shows full content with background */}
+        <div className="lg:hidden bg-gradient-to-r from-blue-600 via-blue-500 to-blue-400 px-4 sm:px-6 py-8">
+          <div className="bg-blue-800/40 backdrop-blur-sm rounded-xl border border-blue-400/30 p-6">
+            <div className="text-center">
+              <Lock className="w-12 h-12 text-blue-200 mx-auto mb-4" />
+              <h4 className="text-lg font-semibold text-white mb-2">Your Privacy is Protected</h4>
+              <p className="text-sm text-blue-100 mb-4">
+                Enterprise-grade security with 256-bit SSL encryption. We never share your data.
+              </p>
+              <div className="flex items-center justify-center text-xs text-blue-200">
+                <Shield className="w-3 h-3 mr-1" />
+                <span>GDPR Compliant</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
-        {/* CTA Section */}
-        <div className="bg-primary">
-          <div className="max-w-2xl mx-auto text-center py-16 px-4 sm:py-20 sm:px-6 lg:px-8">
-            <h2 className="text-3xl font-extrabold text-white sm:text-4xl">
-              <span className="block">Ready to clear your record?</span>
-            </h2>
-            <p className="mt-4 text-lg leading-6 text-primary-light">
-              Join thousands of New Yorkers who have successfully navigated the expungement process.
-            </p>
-            <Button asChild size="lg" variant="secondary" className="mt-8">
-              <Link href="/api/login">Start Your Assessment Today</Link>
-            </Button>
-          </div>
-        </div>
-      </main>
-
-      {/* Footer */}
-      <footer className="bg-white">
-        <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 md:flex md:items-center md:justify-between lg:px-8">
-          <div className="flex justify-center space-x-6 md:order-2">
-            <a href="#" className="text-gray-400 hover:text-gray-500">
-              Privacy Policy
-            </a>
-            <a href="#" className="text-gray-400 hover:text-gray-500">
-              Terms of Service
-            </a>
-            <a href="#" className="text-gray-400 hover:text-gray-500">
-              Contact
-            </a>
-          </div>
-          <div className="mt-8 md:mt-0 md:order-1">
-            <p className="text-center text-base text-gray-400">
-              &copy; 2024 NY Expungement Helper. Your privacy is our top priority.
-            </p>
-          </div>
-        </div>
-      </footer>
+      {/* Auth Modal */}
+      <AuthModal 
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        isLoginMode={isLoginMode}
+        onToggleMode={() => setIsLoginMode(!isLoginMode)}
+      />
     </div>
   );
 }
