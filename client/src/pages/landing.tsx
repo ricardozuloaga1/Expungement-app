@@ -1,154 +1,270 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { AuthModal } from "@/components/auth-modal";
-import { Shield, Clock, Award, Play, Info, Lock } from "lucide-react";
+import { Link } from "wouter";
 
 export default function Landing() {
-  const [showAuthModal, setShowAuthModal] = useState(false);
-  const [isLoginMode, setIsLoginMode] = useState(false);
-
-  const handleStartAssessment = () => {
-    setIsLoginMode(false);
-    setShowAuthModal(true);
-  };
-
-  const handleSignIn = () => {
-    setIsLoginMode(true);
-    setShowAuthModal(true);
-  };
-
   return (
-    <div className="min-h-screen bg-background-light">
-      {/* Navigation Header */}
-      <nav className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <h1 className="text-xl font-bold text-primary">NY Expungement Helper</h1>
-              </div>
-            </div>
-            <div className="flex items-center space-x-4">
-              <button className="text-neutral-medium hover:text-primary transition-colors">
-                <Info className="w-4 h-4 mr-2 inline" />
-                Help
-              </button>
-              <Button 
-                onClick={handleSignIn}
-                className="bg-primary text-white hover:bg-primary-dark"
-              >
-                Sign In
-              </Button>
-            </div>
-          </div>
-        </div>
-      </nav>
+    <>
+      {/* Google Fonts */}
+      <link href="https://fonts.googleapis.com/css2?family=Georgia:wght@400;700&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet" />
+      
+      <div className="min-h-screen bg-white">
+        <style>{`
+          .hero-section {
+            font-family: 'Georgia', serif;
+          }
+          .body-text {
+            font-family: 'Open Sans', sans-serif;
+          }
+          .hero-headline {
+            font-family: 'Georgia', serif;
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            line-height: 1.1;
+            color: #1a2746;
+            font-weight: 700;
+            margin-bottom: 1rem;
+          }
+          .hero-subheading {
+            font-family: 'Open Sans', sans-serif;
+            font-size: clamp(1.1rem, 2vw, 1.25rem);
+            color: #4a5568;
+            margin-bottom: 2rem;
+            line-height: 1.5;
+          }
+          .cta-button {
+            background-color: #1a2746;
+            color: white;
+            font-family: 'Open Sans', sans-serif;
+            font-weight: 600;
+            font-size: 1.125rem;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+          }
+          .cta-button:hover {
+            background-color: #2d3748;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(26, 39, 70, 0.3);
+          }
+          .feature-card {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            background: #f7f9fc;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+          }
+          .feature-icon {
+            font-size: 2rem;
+            min-width: 3rem;
+          }
+          .feature-text {
+            font-family: 'Open Sans', sans-serif;
+            font-weight: 600;
+            color: #1a2746;
+            font-size: 1rem;
+          }
+          .footer {
+            background-color: #1a2746;
+            color: white;
+            padding: 1.5rem 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          }
+          .footer-text {
+            font-family: 'Open Sans', sans-serif;
+            font-size: 0.95rem;
+          }
+          .footer-link {
+            color: #e3e8f7;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+          }
+          .footer-link:hover {
+            color: white;
+          }
+          .hero-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 0;
+          }
+          @media (max-width: 768px) {
+            .hero-container {
+              flex-direction: column !important;
+              text-align: center;
+            }
+            .hero-content {
+              order: 2;
+              padding: 2rem 1rem;
+            }
+            .hero-image-container {
+              order: 1;
+              height: 300px;
+            }
+            .features-container {
+              flex-direction: column;
+              gap: 1rem;
+            }
+            .footer {
+              flex-direction: column;
+              gap: 1rem;
+              text-align: center;
+            }
+          }
+        `}</style>
 
-      {/* Hero Section */}
-      <section className="min-h-[calc(100vh-4rem)] flex flex-col">
-        <div className="flex flex-1">
-          {/* Left side - Content with gradient background */}
-          <div className="flex-1 bg-gradient-to-r from-blue-600 via-blue-500 to-blue-400 flex items-center">
-            <div className="px-4 sm:px-6 lg:px-8 py-20 w-full max-w-2xl">
-              <div className="text-white">
-                <h1 className="text-4xl lg:text-5xl font-bold mb-6 leading-tight">
-                  Clear Your New York Marijuana Record
-                </h1>
-                <p className="text-lg lg:text-xl mb-8 text-blue-100 leading-relaxed">
-                  Check if your conviction qualifies for automatic expungement under the MRTA (2021) and the Clean Slate Act (effective 2024). It only takes a few minutes.
-                </p>
-                <div className="flex flex-col sm:flex-row gap-4 mb-12">
-                  <Button 
-                    onClick={handleStartAssessment}
-                    className="bg-white text-blue-600 px-8 py-4 text-lg font-semibold hover:bg-gray-50 shadow-lg"
-                    size="lg"
-                  >
-                    <Play className="w-5 h-5 mr-2" />
-                    Start Free Assessment
-                  </Button>
-                  <Button 
-                    variant="outline"
-                    className="border-2 border-white text-white px-8 py-4 text-lg font-semibold hover:bg-white hover:text-blue-600 bg-transparent"
-                    size="lg"
-                  >
-                    <Info className="w-5 h-5 mr-2" />
-                    Learn More
-                  </Button>
+        {/* Hero Section */}
+        <main className="hero-section">
+          <div 
+            className="hero-container" 
+            style={{
+              display: 'flex',
+              minHeight: '70vh',
+              maxWidth: '1920px',
+              margin: '0 auto'
+            }}
+          >
+            {/* Left Content */}
+            <div 
+              className="hero-content"
+              style={{
+                flex: '1',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                padding: '4rem 3rem',
+                backgroundColor: '#f7f9fc'
+              }}
+            >
+              <h1 className="hero-headline">
+                Clear Your New York Marijuana Record
+              </h1>
+              
+              <p className="hero-subheading body-text">
+                Find out if you qualify for automatic expungement in just minutes.
+              </p>
+              
+              <Button asChild className="cta-button" style={{ width: 'fit-content', marginBottom: '3rem' }}>
+                <Link href="/api/login">Start Free Assessment</Link>
+              </Button>
+              
+              {/* Feature Cards */}
+              <div 
+                className="features-container"
+                style={{
+                  display: 'flex',
+                  gap: '1.5rem',
+                  flexWrap: 'wrap'
+                }}
+              >
+                <div className="feature-card" style={{ flex: '1', minWidth: '250px' }}>
+                  <div className="feature-icon">🔒</div>
+                  <div className="feature-text">Secure & Private</div>
                 </div>
                 
-                {/* Trust Indicators */}
-                <div className="grid grid-cols-3 gap-6 text-center">
-                  <div>
-                    <Shield className="w-8 h-8 mx-auto mb-2 text-blue-200" />
-                    <p className="text-sm text-blue-100">Secure & Private</p>
-                  </div>
-                  <div>
-                    <Clock className="w-8 h-8 mx-auto mb-2 text-blue-200" />
-                    <p className="text-sm text-blue-100">5-Minute Assessment</p>
-                  </div>
-                  <div>
-                    <Award className="w-8 h-8 mx-auto mb-2 text-blue-200" />
-                    <p className="text-sm text-blue-100">Legal Accuracy</p>
-                  </div>
+                <div className="feature-card" style={{ flex: '1', minWidth: '250px' }}>
+                  <div className="feature-icon">✅</div>
+                  <div className="feature-text">Legal Accuracy</div>
+                </div>
+              </div>
+              
+              <div 
+                style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  marginTop: '1rem'
+                }}
+              >
+                <div className="feature-card" style={{ flex: '1', maxWidth: '300px' }}>
+                  <div className="feature-icon">⏱</div>
+                  <div className="feature-text">5-Minute Assessment</div>
                 </div>
               </div>
             </div>
-          </div>
-          
-          {/* Right side - Professional Image */}
-          <div className="hidden md:block flex-1 relative">
-            <img 
-              src="https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=1000&q=80"
-              alt="Professional legal consultant" 
-              className="w-full h-full object-cover object-center"
-            />
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-blue-500/40 to-transparent"></div>
-          </div>
-        </div>
-        
-        {/* Privacy Protection Bar - Full Width */}
-        <div className="bg-blue-800/80 backdrop-blur-sm border-t border-blue-400/30">
-          <div className="px-4 sm:px-6 lg:px-8 py-6">
-            <div className="flex items-center justify-center text-center">
-              <Lock className="w-6 h-6 text-white mr-3 flex-shrink-0" />
-              <div>
-                <h4 className="text-lg font-semibold text-white">Your Privacy is Protected</h4>
-                <p className="text-sm text-blue-100">
-                  Enterprise-grade encryption with 256-bit SSL. We never share your data.
-                </p>
-                <p className="text-xs text-blue-200 mt-1">
-                  GDPR & NY Privacy Compliant
-                </p>
+            
+            {/* Right Image */}
+            <div 
+              className="hero-image-container"
+              style={{
+                flex: '1',
+                background: 'linear-gradient(135deg, #e3e8f7 0%, #a8b8d8 100%)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                position: 'relative'
+              }}
+            >
+              {/* Placeholder for professional man image */}
+              <div 
+                style={{
+                  width: '400px',
+                  height: '500px',
+                  background: 'linear-gradient(45deg, #6b7280 0%, #4a5568 100%)',
+                  borderRadius: '8px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'white',
+                  fontSize: '1rem',
+                  textAlign: 'center',
+                  padding: '2rem'
+                }}
+              >
+                {/* Replace this div with actual image */}
+                <div className="body-text">
+                  Professional man in suit standing in front of courthouse/government building
+                  <br/><br/>
+                  <small>Replace with: &lt;img src="your-image-url.jpg" alt="Professional consultation" className="hero-image" /&gt;</small>
+                </div>
               </div>
+              
+              {/* Background courthouse elements */}
+              <div 
+                style={{
+                  position: 'absolute',
+                  top: '10%',
+                  right: '10%',
+                  width: '200px',
+                  height: '150px',
+                  background: 'rgba(255, 255, 255, 0.1)',
+                  borderRadius: '8px',
+                  opacity: 0.3
+                }}
+              />
             </div>
           </div>
-        </div>
-        
-        {/* Mobile version - shows full content with background */}
-        <div className="lg:hidden bg-gradient-to-r from-blue-600 via-blue-500 to-blue-400 px-4 sm:px-6 py-8">
-          <div className="bg-blue-800/40 backdrop-blur-sm rounded-xl border border-blue-400/30 p-6">
-            <div className="text-center">
-              <Lock className="w-12 h-12 text-blue-200 mx-auto mb-4" />
-              <h4 className="text-lg font-semibold text-white mb-2">Your Privacy is Protected</h4>
-              <p className="text-sm text-blue-100 mb-4">
-                Enterprise-grade security with 256-bit SSL encryption. We never share your data.
-              </p>
-              <div className="flex items-center justify-center text-xs text-blue-200">
-                <Shield className="w-3 h-3 mr-1" />
-                <span>GDPR Compliant</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+        </main>
 
-      {/* Auth Modal */}
-      <AuthModal 
-        isOpen={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
-        isLoginMode={isLoginMode}
-        onToggleMode={() => setIsLoginMode(!isLoginMode)}
-      />
-    </div>
+        {/* Footer */}
+        <footer className="footer">
+          <div 
+            style={{
+              maxWidth: '1920px',
+              margin: '0 auto',
+              padding: '0 3rem',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              width: '100%'
+            }}
+          >
+            <div className="footer-text">
+              Your privacy is our top priority. We never share your data.
+            </div>
+            
+            <a href="#" className="footer-link">
+              Visit our FAQ
+            </a>
+          </div>
+        </footer>
+      </div>
+    </>
   );
 }
