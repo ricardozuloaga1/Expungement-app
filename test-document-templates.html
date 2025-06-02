@@ -469,16 +469,26 @@ _________________________
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
             
-            const lines = renderedTemplate.split('\\n');
-            let y = 20;
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const pageHeight = doc.internal.pageSize.getHeight();
+            const margin = 20;
+            const maxLineWidth = pageWidth - (margin * 2);
+            
+            const lines = renderedTemplate.split('\n');
+            let y = margin;
             
             lines.forEach(line => {
-                if (y > 270) {
-                    doc.addPage();
-                    y = 20;
-                }
-                doc.text(line, 20, y);
-                y += 6;
+                // Handle long lines by splitting them
+                const wrappedLines = doc.splitTextToSize(line, maxLineWidth);
+                
+                wrappedLines.forEach(wrappedLine => {
+                    if (y > pageHeight - margin) {
+                        doc.addPage();
+                        y = margin;
+                    }
+                    doc.text(wrappedLine, margin, y);
+                    y += 6;
+                });
             });
             
             const fileName = `${currentTemplate.id}_${templateData['[YOUR FULL NAME]'].replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
