@@ -65,6 +65,7 @@ function determineEligibility(responses: any) {
   } = responses;
 
   let automaticExpungement = false;
+  let automaticSealing = false;
   let petitionBasedSealing = false;
   const eligibilityDetails: any = { primaryReason: "", secondaryReasons: [] };
   const recommendations: any[] = [];
@@ -78,7 +79,7 @@ function determineEligibility(responses: any) {
       description: "You must complete all probation or parole requirements before becoming eligible for any relief.",
       timeline: "Until supervision ends"
     });
-    return { automaticExpungement, petitionBasedSealing, eligibilityDetails, recommendations };
+    return { automaticExpungement, automaticSealing, petitionBasedSealing, eligibilityDetails, recommendations };
   }
 
   if (hasExcludedOffenses === "yes") {
@@ -90,7 +91,7 @@ function determineEligibility(responses: any) {
       description: "Class A felonies and sex offenses are permanently excluded from expungement and sealing.",
       timeline: "Not applicable"
     });
-    return { automaticExpungement, petitionBasedSealing, eligibilityDetails, recommendations };
+    return { automaticExpungement, automaticSealing, petitionBasedSealing, eligibilityDetails, recommendations };
   }
 
   // Check for MRTA Automatic Expungement (Best outcome)
@@ -107,7 +108,7 @@ function determineEligibility(responses: any) {
         description: "Your record should already be expunged. Contact the court clerk to confirm and obtain documentation.",
         timeline: "1-2 weeks"
       });
-      return { automaticExpungement, petitionBasedSealing, eligibilityDetails, recommendations };
+      return { automaticExpungement, automaticSealing, petitionBasedSealing, eligibilityDetails, recommendations };
     }
   }
 
@@ -115,6 +116,7 @@ function determineEligibility(responses: any) {
   const yearsPassedSince = calculateYearsSinceConviction(convictionMonth, convictionYear, releaseMonth, releaseYear, servedTime);
   
   if (convictionLevel === "misdemeanor" && yearsPassedSince >= 3 && otherConvictions === "no") {
+    automaticSealing = true;
     eligibilityDetails.primaryReason = "Eligible for automatic sealing under Clean Slate Act (misdemeanor, 3+ years)";
     eligibilityDetails.cleanSlateApplicable = true;
     
@@ -124,10 +126,11 @@ function determineEligibility(responses: any) {
       description: "Your record will be automatically sealed starting November 2024. No action required on your part.",
       timeline: "November 2024"
     });
-    return { automaticExpungement, petitionBasedSealing, eligibilityDetails, recommendations };
+    return { automaticExpungement, automaticSealing, petitionBasedSealing, eligibilityDetails, recommendations };
   }
   
   if (convictionLevel === "felony" && yearsPassedSince >= 8 && otherConvictions === "no") {
+    automaticSealing = true;
     eligibilityDetails.primaryReason = "Eligible for automatic sealing under Clean Slate Act (felony, 8+ years)";
     eligibilityDetails.cleanSlateApplicable = true;
     
@@ -137,7 +140,7 @@ function determineEligibility(responses: any) {
       description: "Your record will be automatically sealed starting November 2024. No action required on your part.",
       timeline: "November 2024"
     });
-    return { automaticExpungement, petitionBasedSealing, eligibilityDetails, recommendations };
+    return { automaticExpungement, automaticSealing, petitionBasedSealing, eligibilityDetails, recommendations };
   }
 
   // Check for Petition-Based Sealing
@@ -162,7 +165,7 @@ function determineEligibility(responses: any) {
       description: "Petition-based sealing has specific requirements. Legal help can improve your chances of success.",
       timeline: "Before filing"
     });
-    return { automaticExpungement, petitionBasedSealing, eligibilityDetails, recommendations };
+    return { automaticExpungement, automaticSealing, petitionBasedSealing, eligibilityDetails, recommendations };
   }
 
   // Not Currently Eligible
@@ -208,6 +211,7 @@ function determineEligibility(responses: any) {
 
   return {
     automaticExpungement,
+    automaticSealing,
     petitionBasedSealing,
     eligibilityDetails,
     recommendations
