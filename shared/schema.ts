@@ -41,11 +41,47 @@ export const users = pgTable("users", {
 export const questionnaireResponses = pgTable("questionnaire_responses", {
   id: serial("id").primaryKey(),
   userId: varchar("user_id").notNull().references(() => users.id),
-  age: varchar("age"), // "under_21" | "21_or_older"
+  
+  // Section 1: Basic Info
+  convictionState: varchar("conviction_state"),
+  hasMarijuanaConviction: varchar("has_marijuana_conviction"),
+  offenseTypes: jsonb("offense_types"), // Array of offense types
+  convictionMonth: varchar("conviction_month"),
+  convictionYear: varchar("conviction_year"),
+  knowsPenalCode: varchar("knows_penal_code"),
+  penalCode: varchar("penal_code"),
+  
+  // Section 2: MRTA Eligibility
+  possessionAmount: varchar("possession_amount"),
+  ageAtOffense: varchar("age_at_offense"),
+  receivedNotice: varchar("received_notice"),
+  
+  // Section 3: Clean Slate Act
+  convictionLevel: varchar("conviction_level"),
+  servedTime: varchar("served_time"),
+  releaseMonth: varchar("release_month"),
+  releaseYear: varchar("release_year"),
+  otherConvictions: varchar("other_convictions"),
+  onSupervision: varchar("on_supervision"),
+  hasExcludedOffenses: varchar("has_excluded_offenses"),
+  
+  // Section 4: Petition-Based Sealing
+  totalConvictions: varchar("total_convictions"),
+  totalFelonies: varchar("total_felonies"),
+  sentenceCompleted: varchar("sentence_completed"),
+  
+  // Section 5: Record Verification
+  hasRecords: varchar("has_records"),
+  wantsRapAssistance: varchar("wants_rap_assistance"),
+  uploadedDocument: varchar("uploaded_document"),
+  
+  // Legacy fields for backward compatibility
+  age: varchar("age"),
   county: varchar("county"),
-  chargeTypes: jsonb("charge_types"), // Array of charge types
-  firstArrestDate: varchar("first_arrest_date"), // "before_march_2021" | "after_march_2021" | "not_sure"
-  convictionDetails: jsonb("conviction_details"), // Additional conviction details
+  chargeTypes: jsonb("charge_types"),
+  firstArrestDate: varchar("first_arrest_date"),
+  convictionDetails: jsonb("conviction_details"),
+  
   completed: boolean("completed").default(false),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),

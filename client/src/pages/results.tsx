@@ -11,7 +11,7 @@ import { generatePDFReport } from "@/lib/pdf-generator";
 import { DocumentGenerator } from "@/components/document-generator";
 import { CheckCircle, Clock, FileText, Star, Download, ArrowLeft } from "lucide-react";
 import { Link } from "wouter";
-import type { EligibilityResult } from "@shared/schema";
+import type { EligibilityResult, QuestionnaireResponse, User } from "@shared/schema";
 
 export default function Results() {
   const { user, isLoading } = useAuth();
@@ -40,13 +40,13 @@ export default function Results() {
     enabled: !!user,
   });
 
-  const { data: questionnaireResponses = [] } = useQuery({
+  const { data: questionnaireResponses = [] } = useQuery<QuestionnaireResponse[]>({
     queryKey: ["/api/questionnaire/user"],
     enabled: !!user,
   });
 
   const result = eligibilityResults.find(r => r.id === resultId);
-  const questionnaireResponse = questionnaireResponses.find((q: any) => 
+  const questionnaireResponse = questionnaireResponses.find((q: QuestionnaireResponse) => 
     eligibilityResults.some(er => er.questionnaireResponseId === q.id && er.id === resultId)
   );
 
@@ -54,7 +54,7 @@ export default function Results() {
     if (!result || !user) return;
     
     try {
-      generatePDFReport(result, user);
+      generatePDFReport(result, user as User);
       toast({
         title: "Report Downloaded",
         description: "Your eligibility report has been downloaded successfully.",

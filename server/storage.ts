@@ -16,7 +16,10 @@ import {
   type UserProgress,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and } from "drizzle-orm";
+import { drizzle } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
+import * as schema from "@shared/schema";
 
 // Interface for storage operations
 export interface IStorage {
@@ -45,127 +48,340 @@ export interface IStorage {
   upsertUserProgress(progress: InsertUserProgress): Promise<UserProgress>;
 }
 
-export class DatabaseStorage implements IStorage {
-  // User operations
-  // (IMPORTANT) these user operations are mandatory for Replit Auth.
+// Mock storage for local development
+const isDevelopment = process.env.NODE_ENV === "development" && process.env.DATABASE_URL?.includes("dummy");
 
-  async getUser(id: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.id, id));
-    return user;
-  }
+// In-memory storage for development
+const mockData = {
+  users: new Map<string, User>(),
+  questionnaireResponses: new Map<number, QuestionnaireResponse>(),
+  eligibilityResults: new Map<number, EligibilityResult>(),
+  premiumSubscriptions: new Map<number, PremiumSubscription>(),
+  userProgress: new Map<string, UserProgress>(),
+  nextId: 1
+};
 
-  async upsertUser(userData: UpsertUser): Promise<User> {
-    const [user] = await db
-      .insert(users)
-      .values(userData)
-      .onConflictDoUpdate({
-        target: users.id,
-        set: {
-          ...userData,
-          updatedAt: new Date(),
-        },
-      })
-      .returning();
-    return user;
-  }
+let database: any = null;
 
-  // Questionnaire operations
-  async createQuestionnaireResponse(response: InsertQuestionnaireResponse): Promise<QuestionnaireResponse> {
-    const [created] = await db
-      .insert(questionnaireResponses)
-      .values(response)
-      .returning();
-    return created;
-  }
-
-  async updateQuestionnaireResponse(id: number, response: Partial<InsertQuestionnaireResponse>): Promise<QuestionnaireResponse> {
-    const [updated] = await db
-      .update(questionnaireResponses)
-      .set({ ...response, updatedAt: new Date() })
-      .where(eq(questionnaireResponses.id, id))
-      .returning();
-    return updated;
-  }
-
-  async getQuestionnaireResponse(id: number): Promise<QuestionnaireResponse | undefined> {
-    const [response] = await db
-      .select()
-      .from(questionnaireResponses)
-      .where(eq(questionnaireResponses.id, id));
-    return response;
-  }
-
-  async getUserQuestionnaireResponses(userId: string): Promise<QuestionnaireResponse[]> {
-    return await db
-      .select()
-      .from(questionnaireResponses)
-      .where(eq(questionnaireResponses.userId, userId))
-      .orderBy(desc(questionnaireResponses.createdAt));
-  }
-
-  // Eligibility operations
-  async createEligibilityResult(result: InsertEligibilityResult): Promise<EligibilityResult> {
-    const [created] = await db
-      .insert(eligibilityResults)
-      .values(result)
-      .returning();
-    return created;
-  }
-
-  async getEligibilityResult(id: number): Promise<EligibilityResult | undefined> {
-    const [result] = await db
-      .select()
-      .from(eligibilityResults)
-      .where(eq(eligibilityResults.id, id));
-    return result;
-  }
-
-  async getUserEligibilityResults(userId: string): Promise<EligibilityResult[]> {
-    return await db
-      .select()
-      .from(eligibilityResults)
-      .where(eq(eligibilityResults.userId, userId))
-      .orderBy(desc(eligibilityResults.createdAt));
-  }
-
-  // Premium operations
-  async createPremiumSubscription(subscription: InsertPremiumSubscription): Promise<PremiumSubscription> {
-    const [created] = await db
-      .insert(premiumSubscriptions)
-      .values(subscription)
-      .returning();
-    return created;
-  }
-
-  async getUserPremiumSubscription(userId: string): Promise<PremiumSubscription | undefined> {
-    const [subscription] = await db
-      .select()
-      .from(premiumSubscriptions)
-      .where(eq(premiumSubscriptions.userId, userId))
-      .orderBy(desc(premiumSubscriptions.createdAt));
-    return subscription;
-  }
-
-  // Education operations
-  async getUserProgress(userId: string): Promise<UserProgress | undefined> {
-    const [progress] = await db.select().from(userProgress).where(eq(userProgress.userId, userId));
-    return progress;
-  }
-
-  async upsertUserProgress(progressData: InsertUserProgress): Promise<UserProgress> {
-    const [progress] = await db
-      .insert(userProgress)
-      .values(progressData)
-      .onConflictDoUpdate({
-        target: userProgress.userId,
-        set: {
-          ...progressData,
-          updatedAt: new Date(),
-        },
-      })
-      .returning();
-    return progress;
-  }
+if (!isDevelopment) {
+  const connectionString = process.env.DATABASE_URL!;
+  const client = postgres(connectionString);
+  database = drizzle(client, { schema });
 }
 
-export const storage = new DatabaseStorage();
+export const storage = {
+  async upsertUser(user: UpsertUser): Promise<User> {
+    if (isDevelopment) {
+      const existingUser = mockData.users.get(user.id);
+      const newUser: User = {
+        id: user.id,
+        email: user.email || null,
+        firstName: user.firstName || null,
+        lastName: user.lastName || null,
+        profileImageUrl: user.profileImageUrl || null,
+        createdAt: existingUser?.createdAt || new Date(),
+        updatedAt: new Date(),
+      };
+      mockData.users.set(user.id, newUser);
+      return newUser;
+    }
+    
+    const [result] = await database
+      .insert(schema.users)
+      .values(user)
+      .onConflictDoUpdate({
+        target: schema.users.id,
+        set: {
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          profileImageUrl: user.profileImageUrl,
+          updatedAt: new Date(),
+        },
+      })
+      .returning();
+    return result;
+  },
+
+  async getUser(userId: string): Promise<User | null> {
+    if (isDevelopment) {
+      return mockData.users.get(userId) || null;
+    }
+    
+    const [user] = await database
+      .select()
+      .from(schema.users)
+      .where(eq(schema.users.id, userId))
+      .limit(1);
+    return user || null;
+  },
+
+  async createQuestionnaireResponse(data: InsertQuestionnaireResponse): Promise<QuestionnaireResponse> {
+    if (isDevelopment) {
+      const id = mockData.nextId++;
+      const response: QuestionnaireResponse = {
+        id,
+        userId: data.userId,
+        
+        // Section 1: Basic Info
+        convictionState: data.convictionState || null,
+        hasMarijuanaConviction: data.hasMarijuanaConviction || null,
+        offenseTypes: data.offenseTypes || null,
+        convictionMonth: data.convictionMonth || null,
+        convictionYear: data.convictionYear || null,
+        knowsPenalCode: data.knowsPenalCode || null,
+        penalCode: data.penalCode || null,
+        
+        // Section 2: MRTA Eligibility
+        possessionAmount: data.possessionAmount || null,
+        ageAtOffense: data.ageAtOffense || null,
+        receivedNotice: data.receivedNotice || null,
+        
+        // Section 3: Clean Slate Act
+        convictionLevel: data.convictionLevel || null,
+        servedTime: data.servedTime || null,
+        releaseMonth: data.releaseMonth || null,
+        releaseYear: data.releaseYear || null,
+        otherConvictions: data.otherConvictions || null,
+        onSupervision: data.onSupervision || null,
+        hasExcludedOffenses: data.hasExcludedOffenses || null,
+        
+        // Section 4: Petition-Based Sealing
+        totalConvictions: data.totalConvictions || null,
+        totalFelonies: data.totalFelonies || null,
+        sentenceCompleted: data.sentenceCompleted || null,
+        
+        // Section 5: Record Verification
+        hasRecords: data.hasRecords || null,
+        wantsRapAssistance: data.wantsRapAssistance || null,
+        uploadedDocument: data.uploadedDocument || null,
+        
+        // Legacy fields
+        age: data.age || null,
+        county: data.county || null,
+        chargeTypes: data.chargeTypes || null,
+        firstArrestDate: data.firstArrestDate || null,
+        convictionDetails: data.convictionDetails || null,
+        
+        completed: data.completed || null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      mockData.questionnaireResponses.set(id, response);
+      return response;
+    }
+    
+    const [result] = await database
+      .insert(schema.questionnaireResponses)
+      .values(data)
+      .returning();
+    return result;
+  },
+
+  async updateQuestionnaireResponse(id: number, data: Partial<InsertQuestionnaireResponse>): Promise<QuestionnaireResponse> {
+    if (isDevelopment) {
+      const existing = mockData.questionnaireResponses.get(id);
+      if (!existing) throw new Error("Questionnaire response not found");
+      
+      const updated: QuestionnaireResponse = {
+        ...existing,
+        // Update any provided fields
+        ...(data.convictionState !== undefined && { convictionState: data.convictionState }),
+        ...(data.hasMarijuanaConviction !== undefined && { hasMarijuanaConviction: data.hasMarijuanaConviction }),
+        ...(data.offenseTypes !== undefined && { offenseTypes: data.offenseTypes }),
+        ...(data.convictionMonth !== undefined && { convictionMonth: data.convictionMonth }),
+        ...(data.convictionYear !== undefined && { convictionYear: data.convictionYear }),
+        ...(data.knowsPenalCode !== undefined && { knowsPenalCode: data.knowsPenalCode }),
+        ...(data.penalCode !== undefined && { penalCode: data.penalCode }),
+        ...(data.possessionAmount !== undefined && { possessionAmount: data.possessionAmount }),
+        ...(data.ageAtOffense !== undefined && { ageAtOffense: data.ageAtOffense }),
+        ...(data.receivedNotice !== undefined && { receivedNotice: data.receivedNotice }),
+        ...(data.convictionLevel !== undefined && { convictionLevel: data.convictionLevel }),
+        ...(data.servedTime !== undefined && { servedTime: data.servedTime }),
+        ...(data.releaseMonth !== undefined && { releaseMonth: data.releaseMonth }),
+        ...(data.releaseYear !== undefined && { releaseYear: data.releaseYear }),
+        ...(data.otherConvictions !== undefined && { otherConvictions: data.otherConvictions }),
+        ...(data.onSupervision !== undefined && { onSupervision: data.onSupervision }),
+        ...(data.hasExcludedOffenses !== undefined && { hasExcludedOffenses: data.hasExcludedOffenses }),
+        ...(data.totalConvictions !== undefined && { totalConvictions: data.totalConvictions }),
+        ...(data.totalFelonies !== undefined && { totalFelonies: data.totalFelonies }),
+        ...(data.sentenceCompleted !== undefined && { sentenceCompleted: data.sentenceCompleted }),
+        ...(data.hasRecords !== undefined && { hasRecords: data.hasRecords }),
+        ...(data.wantsRapAssistance !== undefined && { wantsRapAssistance: data.wantsRapAssistance }),
+        ...(data.uploadedDocument !== undefined && { uploadedDocument: data.uploadedDocument }),
+        ...(data.age !== undefined && { age: data.age }),
+        ...(data.county !== undefined && { county: data.county }),
+        ...(data.chargeTypes !== undefined && { chargeTypes: data.chargeTypes }),
+        ...(data.firstArrestDate !== undefined && { firstArrestDate: data.firstArrestDate }),
+        ...(data.convictionDetails !== undefined && { convictionDetails: data.convictionDetails }),
+        ...(data.completed !== undefined && { completed: data.completed }),
+        updatedAt: new Date(),
+      };
+      mockData.questionnaireResponses.set(id, updated);
+      return updated;
+    }
+    
+    const [result] = await database
+      .update(schema.questionnaireResponses)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(schema.questionnaireResponses.id, id))
+      .returning();
+    return result;
+  },
+
+  async getQuestionnaireResponse(id: number): Promise<QuestionnaireResponse | null> {
+    if (isDevelopment) {
+      return mockData.questionnaireResponses.get(id) || null;
+    }
+    
+    const [response] = await database
+      .select()
+      .from(schema.questionnaireResponses)
+      .where(eq(schema.questionnaireResponses.id, id))
+      .limit(1);
+    return response || null;
+  },
+
+  async getUserQuestionnaireResponses(userId: string): Promise<QuestionnaireResponse[]> {
+    if (isDevelopment) {
+      return Array.from(mockData.questionnaireResponses.values())
+        .filter(response => response.userId === userId);
+    }
+    
+    return await database
+      .select()
+      .from(schema.questionnaireResponses)
+      .where(eq(schema.questionnaireResponses.userId, userId))
+      .orderBy(desc(schema.questionnaireResponses.createdAt));
+  },
+
+  async createEligibilityResult(data: InsertEligibilityResult): Promise<EligibilityResult> {
+    if (isDevelopment) {
+      const id = mockData.nextId++;
+      const result: EligibilityResult = {
+        id,
+        userId: data.userId,
+        questionnaireResponseId: data.questionnaireResponseId,
+        automaticExpungement: data.automaticExpungement || null,
+        automaticSealing: data.automaticSealing || null,
+        petitionBasedSealing: data.petitionBasedSealing || null,
+        eligibilityDetails: data.eligibilityDetails || null,
+        recommendations: data.recommendations || null,
+        createdAt: new Date(),
+      };
+      mockData.eligibilityResults.set(id, result);
+      return result;
+    }
+    
+    const [result] = await database
+      .insert(schema.eligibilityResults)
+      .values(data)
+      .returning();
+    return result;
+  },
+
+  async getUserEligibilityResults(userId: string): Promise<EligibilityResult[]> {
+    if (isDevelopment) {
+      return Array.from(mockData.eligibilityResults.values())
+        .filter(result => result.userId === userId);
+    }
+    
+    return await database
+      .select()
+      .from(schema.eligibilityResults)
+      .where(eq(schema.eligibilityResults.userId, userId))
+      .orderBy(desc(schema.eligibilityResults.createdAt));
+  },
+
+  async createPremiumSubscription(data: InsertPremiumSubscription): Promise<PremiumSubscription> {
+    if (isDevelopment) {
+      const id = mockData.nextId++;
+      const subscription: PremiumSubscription = {
+        id,
+        userId: data.userId,
+        status: data.status,
+        subscriptionType: data.subscriptionType,
+        price: data.price || null,
+        expiresAt: data.expiresAt || null,
+        createdAt: new Date(),
+      };
+      mockData.premiumSubscriptions.set(id, subscription);
+      return subscription;
+    }
+    
+    const [result] = await database
+      .insert(schema.premiumSubscriptions)
+      .values(data)
+      .returning();
+    return result;
+  },
+
+  async getUserPremiumSubscription(userId: string): Promise<PremiumSubscription | null> {
+    if (isDevelopment) {
+      return Array.from(mockData.premiumSubscriptions.values())
+        .find(sub => sub.userId === userId && sub.status === "active") || null;
+    }
+    
+    const [subscription] = await database
+      .select()
+      .from(schema.premiumSubscriptions)
+      .where(and(
+        eq(schema.premiumSubscriptions.userId, userId),
+        eq(schema.premiumSubscriptions.status, "active")
+      ))
+      .orderBy(desc(schema.premiumSubscriptions.createdAt))
+      .limit(1);
+    return subscription || null;
+  },
+
+  async getUserProgress(userId: string): Promise<UserProgress | null> {
+    if (isDevelopment) {
+      return mockData.userProgress.get(userId) || null;
+    }
+    
+    const [progress] = await database
+      .select()
+      .from(schema.userProgress)
+      .where(eq(schema.userProgress.userId, userId))
+      .limit(1);
+    return progress || null;
+  },
+
+  async upsertUserProgress(data: InsertUserProgress): Promise<UserProgress> {
+    if (isDevelopment) {
+      const existing = mockData.userProgress.get(data.userId);
+      const progress: UserProgress = {
+        id: existing?.id || mockData.nextId++,
+        userId: data.userId,
+        completedModules: data.completedModules || null,
+        moduleScores: data.moduleScores || null,
+        achievements: data.achievements || null,
+        totalTimeSpent: data.totalTimeSpent || null,
+        lastStudyDate: data.lastStudyDate || null,
+        currentStreak: data.currentStreak || null,
+        createdAt: existing?.createdAt || new Date(),
+        updatedAt: new Date(),
+      };
+      mockData.userProgress.set(data.userId, progress);
+      return progress;
+    }
+    
+    const [result] = await database
+      .insert(schema.userProgress)
+      .values(data)
+      .onConflictDoUpdate({
+        target: schema.userProgress.userId,
+        set: {
+          completedModules: data.completedModules,
+          moduleScores: data.moduleScores,
+          achievements: data.achievements,
+          totalTimeSpent: data.totalTimeSpent,
+          lastStudyDate: data.lastStudyDate,
+          currentStreak: data.currentStreak,
+          updatedAt: new Date(),
+        },
+      })
+      .returning();
+    return result;
+  },
+};

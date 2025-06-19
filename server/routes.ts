@@ -1,7 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { setupAuth, isAuthenticated } from "./replitAuth";
 import { insertQuestionnaireResponseSchema, insertEligibilityResultSchema } from "@shared/schema";
 import { z } from "zod";
 
@@ -143,26 +142,31 @@ function determineEligibility(responses: any) {
     return { automaticExpungement, automaticSealing, petitionBasedSealing, eligibilityDetails, recommendations };
   }
 
-  // Check for Petition-Based Sealing
-  if (tenYearsPassed === "yes" && 
+  // PRIORITY 4: Check for Petition-Based Sealing (CPL § 160.59)
+  // Calculate if 10 years have passed automatically
+  const tenYearsHavePassed = yearsPassedSince >= 10;
+  
+  if (tenYearsHavePassed && 
       parseInt(totalConvictions || "0") <= 2 && 
-      parseInt(totalFelonies || "0") <= 1) {
+      parseInt(totalFelonies || "0") <= 1 &&
+      sentenceCompleted === "yes") {
     
     petitionBasedSealing = true;
     eligibilityDetails.primaryReason = "Eligible for petition-based sealing under CPL § 160.59";
     eligibilityDetails.petitionApplicable = true;
+    eligibilityDetails.yearsSinceConviction = yearsPassedSince.toFixed(1);
     
     recommendations.push({
       type: "petition",
       title: "File Court Petition for Record Sealing",
-      description: "You can petition the court for record sealing. This requires a formal application and court approval.",
+      description: `You meet the criteria for petition-based sealing: ≤2 convictions, ≤1 felony, ${yearsPassedSince.toFixed(1)} years have passed (≥10 required), and sentence completed. This requires a formal application and court approval.`,
       timeline: "6-12 months"
     });
     
     recommendations.push({
       type: "legal_help",
       title: "Consider Legal Assistance",
-      description: "Petition-based sealing has specific requirements. Legal help can improve your chances of success.",
+      description: "Petition-based sealing has specific requirements and is discretionary. Legal help can improve your chances of success.",
       timeline: "Before filing"
     });
     return { automaticExpungement, automaticSealing, petitionBasedSealing, eligibilityDetails, recommendations };
@@ -179,8 +183,12 @@ function determineEligibility(responses: any) {
     eligibilityDetails.primaryReason = "Additional convictions prevent automatic sealing";
   } else if (parseInt(totalConvictions || "0") > 2) {
     eligibilityDetails.primaryReason = "Too many total convictions for petition-based sealing (maximum 2)";
-  } else if (tenYearsPassed === "no") {
-    eligibilityDetails.primaryReason = "Less than 10 years have passed since conviction for petition-based sealing";
+  } else if (!tenYearsHavePassed) {
+    const yearsRemaining = 10 - yearsPassedSince;
+    eligibilityDetails.primaryReason = `Need ${yearsRemaining.toFixed(1)} more years for petition-based sealing (10 years required)`;
+    eligibilityDetails.yearsSinceConviction = yearsPassedSince.toFixed(1);
+  } else if (sentenceCompleted !== "yes") {
+    eligibilityDetails.primaryReason = "Must complete all sentence conditions before petition-based sealing";
   } else {
     eligibilityDetails.primaryReason = "Does not meet current eligibility criteria for any relief pathway";
   }
@@ -219,6 +227,14 @@ function determineEligibility(responses: any) {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Use local auth for development, Replit auth for production
+  const isDevelopment = process.env.NODE_ENV === "development";
+  const authModule = isDevelopment 
+    ? await import("./localAuth")
+    : await import("./replitAuth");
+  
+  const { setupAuth, isAuthenticated } = authModule;
+
   // Auth middleware
   await setupAuth(app);
 
@@ -407,20 +423,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Update progress data
-      const updatedCompletedModules = completed && !existingProgress.completedModules.includes(moduleId)
-        ? [...existingProgress.completedModules, moduleId]
-        : existingProgress.completedModules;
+      const updatedCompletedModules = completed && !existingProgress?.completedModules?.includes(moduleId)
+        ? [...(existingProgress?.completedModules || []), moduleId]
+        : existingProgress?.completedModules || [];
 
       const updatedModuleScores = score !== undefined
-        ? { ...existingProgress.moduleScores, [moduleId]: score }
-        : existingProgress.moduleScores;
+        ? { ...(existingProgress?.moduleScores || {}), [moduleId]: score }
+        : existingProgress?.moduleScores || {};
 
-      const updatedTotalTimeSpent = (existingProgress.totalTimeSpent || 0) + (timeSpent || 0);
+      const updatedTotalTimeSpent = (existingProgress?.totalTimeSpent || 0) + (timeSpent || 0);
 
       // Calculate streak
       const today = new Date();
-      const lastStudy = existingProgress.lastStudyDate ? new Date(existingProgress.lastStudyDate) : null;
-      let currentStreak = existingProgress.currentStreak || 0;
+      const lastStudy = existingProgress?.lastStudyDate ? new Date(existingProgress.lastStudyDate) : null;
+      let currentStreak = existingProgress?.currentStreak || 0;
 
       if (lastStudy) {
         const daysDiff = Math.floor((today.getTime() - lastStudy.getTime()) / (1000 * 60 * 60 * 24));
@@ -435,7 +451,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Simple achievement checking
       const newAchievements = [];
-      const existingAchievementIds = existingProgress.achievements || [];
+      const existingAchievementIds = existingProgress?.achievements || [];
       
       // First module achievement
       if (updatedCompletedModules.length >= 1 && !existingAchievementIds.includes('first-module')) {

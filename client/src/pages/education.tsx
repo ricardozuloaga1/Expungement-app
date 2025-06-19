@@ -8,6 +8,7 @@ import { Progress } from "@/components/ui/progress";
 import { BookOpen, Clock, Trophy, Star, CheckCircle, Lock } from "lucide-react";
 import { Link } from "wouter";
 import { educationModules, achievements, type UserProgress } from "@/lib/education-modules";
+import type { User } from "@shared/schema";
 
 export default function Education() {
   const { user, isAuthenticated } = useAuth();
@@ -30,7 +31,7 @@ export default function Education() {
       } else {
         // Initialize new user progress
         setUserProgress({
-          userId: user?.id || '',
+          userId: (user as User)?.id || '',
           completedModules: [],
           moduleScores: {},
           achievements: [],

@@ -1,4 +1,4 @@
-import jsPDF from 'jspdf';
+import { jsPDF } from 'jspdf';
 import type { EligibilityResult, User } from "@shared/schema";
 
 function generateExecutiveSummary(result: EligibilityResult): string {
