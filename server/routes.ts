@@ -343,18 +343,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/premium/subscribe', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const { subscriptionType = "premium_help", price = 29900 } = req.body; // $299 in cents
+      const { 
+        subscriptionType = "consultation", 
+        price = 14900, // $149 in cents for consultation
+        eligibilityType,
+        userComplexity = "moderate"
+      } = req.body;
+
+      // Validate subscription type and set appropriate price
+      let validatedPrice = price;
+      if (subscriptionType === "consultation") {
+        validatedPrice = 14900; // $149
+      } else if (subscriptionType === "full_service") {
+        validatedPrice = 29900; // $299
+      }
 
       const subscriptionData = {
         userId,
         status: "active",
         subscriptionType,
-        price,
+        price: validatedPrice,
+        eligibilityType,
+        userComplexity,
         expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year from now
+        createdAt: new Date(),
       };
 
       const subscription = await storage.createPremiumSubscription(subscriptionData);
-      res.json(subscription);
+      
+      // In production, you would:
+      // 1. Process payment with Stripe/payment processor
+      // 2. Send confirmation email to user
+      // 3. Notify attorney team
+      // 4. Create case management record
+      
+      res.json({
+        ...subscription,
+        message: "Premium subscription activated successfully",
+        nextSteps: subscriptionType === "consultation" 
+          ? "You'll receive an email within 24 hours to schedule your attorney consultation."
+          : "Our legal team will contact you within 24 hours to begin your case."
+      });
     } catch (error) {
       console.error("Error creating premium subscription:", error);
       res.status(400).json({ message: "Failed to create subscription" });
@@ -372,7 +401,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Serve the test HTML file
+  // Premium case status endpoint
+  app.get('/api/premium/case-status', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const subscription = await storage.getUserPremiumSubscription(userId);
+      
+      if (!subscription) {
+        return res.status(404).json({ message: "No premium subscription found" });
+      }
+
+      // Mock case status - in production, this would come from case management system
+      const caseStatus = {
+        subscriptionType: subscription.subscriptionType,
+        status: subscription.status,
+        createdAt: subscription.createdAt,
+        currentStep: subscription.subscriptionType === "consultation" 
+          ? "Scheduling consultation" 
+          : "Initial case review",
+        progress: 25,
+        nextAction: subscription.subscriptionType === "consultation"
+          ? "Attorney will contact you within 24 hours"
+          : "Legal team is reviewing your case details",
+        estimatedCompletion: subscription.subscriptionType === "consultation"
+          ? "Within 1 week"
+          : "2-4 weeks"
+      };
+
+      res.json(caseStatus);
+    } catch (error) {
+      console.error("Error fetching case status:", error);
+      res.status(500).json({ message: "Failed to fetch case status" });
+    }
+  });
+
   // Education routes
   app.get('/api/education/progress', isAuthenticated, async (req: any, res) => {
     try {

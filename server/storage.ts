@@ -49,7 +49,7 @@ export interface IStorage {
 }
 
 // Mock storage for local development
-const isDevelopment = process.env.NODE_ENV === "development" && process.env.DATABASE_URL?.includes("dummy");
+const isDevelopment = process.env.NODE_ENV === "development" && (!process.env.DATABASE_URL || process.env.DATABASE_URL?.includes("dummy"));
 
 // In-memory storage for development
 const mockData = {
@@ -302,6 +302,8 @@ export const storage = {
         status: data.status,
         subscriptionType: data.subscriptionType,
         price: data.price || null,
+        eligibilityType: data.eligibilityType || null,
+        userComplexity: data.userComplexity || null,
         expiresAt: data.expiresAt || null,
         createdAt: new Date(),
       };

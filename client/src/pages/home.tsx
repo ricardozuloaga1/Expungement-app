@@ -1,9 +1,10 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PremiumModal } from "@/components/premium-modal";
 import { useQuery } from "@tanstack/react-query";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { Play, FileText, Star, LogOut, User, BookOpen } from "lucide-react";
@@ -13,6 +14,7 @@ import type { User as UserType } from "@shared/schema";
 export default function Home() {
   const { user, isLoading } = useAuth();
   const { toast } = useToast();
+  const [showPremiumModal, setShowPremiumModal] = useState(false);
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -207,18 +209,22 @@ export default function Home() {
               <div>
                 <h4 className="font-semibold text-orange-800 mb-2">Get Professional Help</h4>
                 <ul className="text-sm text-orange-700 space-y-1">
-                  <li>• Pre-filled legal documents</li>
-                  <li>• Attorney review of your case</li>
-                  <li>• 30-minute phone consultation</li>
+                  <li>• Attorney consultation & case review</li>
+                  <li>• Professional document preparation</li>
+                  <li>• Ongoing legal support & guidance</li>
                   <li>• Step-by-step filing instructions</li>
                 </ul>
               </div>
               <div className="flex flex-col justify-center">
                 <div className="text-center mb-4">
-                  <span className="text-2xl font-bold text-orange-800">$299</span>
-                  <span className="text-lg text-orange-600 line-through ml-2">$499</span>
+                  <span className="text-2xl font-bold text-orange-800">$149</span>
+                  <span className="text-sm text-orange-600 block">Starting at</span>
                 </div>
-                <Button className="accent-gradient text-white hover:opacity-90">
+                <Button 
+                  onClick={() => setShowPremiumModal(true)}
+                  className="accent-gradient text-white hover:opacity-90"
+                >
+                  <Star className="w-4 h-4 mr-2" />
                   Upgrade to Premium
                 </Button>
               </div>
@@ -226,6 +232,31 @@ export default function Home() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Premium Modal */}
+      <PremiumModal 
+        isOpen={showPremiumModal}
+        onClose={() => setShowPremiumModal(false)}
+        onContinueBasic={() => {
+          setShowPremiumModal(false);
+          toast({
+            title: "No problem!",
+            description: "You can always upgrade later. Free tools are still available.",
+          });
+        }}
+        eligibilityType={latestResult ? (
+          latestResult.automaticExpungement ? 'automatic_expungement' :
+          latestResult.automaticSealing ? 'automatic_sealing' :
+          latestResult.petitionBasedSealing ? 'petition_sealing' :
+          'not_eligible'
+        ) : 'unknown'}
+        userComplexity={latestResult ? (
+          latestResult.petitionBasedSealing ? 'complex' :
+          latestResult.automaticSealing ? 'moderate' :
+          latestResult.automaticExpungement ? 'simple' :
+          'complex'
+        ) : 'moderate'}
+      />
     </div>
   );
 }

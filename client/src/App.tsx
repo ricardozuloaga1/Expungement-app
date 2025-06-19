@@ -10,6 +10,7 @@ import Questionnaire from "@/pages/questionnaire";
 import Results from "@/pages/results";
 import Education from "@/pages/education";
 import ModulePage from "@/pages/module";
+import Premium from "@/pages/premium";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -26,6 +27,7 @@ function Router() {
           <Route path="/results/:id" component={Results} />
           <Route path="/education" component={Education} />
           <Route path="/education/module/:id" component={ModulePage} />
+          <Route path="/premium" component={Premium} />
         </>
       )}
       <Route component={NotFound} />

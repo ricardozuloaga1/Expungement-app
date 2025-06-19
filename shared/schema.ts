@@ -105,8 +105,10 @@ export const premiumSubscriptions = pgTable("premium_subscriptions", {
   id: serial("id").primaryKey(),
   userId: varchar("user_id").notNull().references(() => users.id),
   status: varchar("status").notNull(), // "active" | "cancelled" | "expired"
-  subscriptionType: varchar("subscription_type").notNull(), // "premium_help"
+  subscriptionType: varchar("subscription_type").notNull(), // "consultation" | "full_service"
   price: integer("price"), // in cents
+  eligibilityType: varchar("eligibility_type"), // The user's eligibility type when they subscribed
+  userComplexity: varchar("user_complexity"), // "simple" | "moderate" | "complex"
   expiresAt: timestamp("expires_at"),
   createdAt: timestamp("created_at").defaultNow(),
 });
