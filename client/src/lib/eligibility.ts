@@ -215,7 +215,10 @@ export function analyzeEligibility(questionnaireData: any): EligibilityAnalysis 
   }
 
   // PRIORITY 4: Check for Petition-Based Sealing (CPL § 160.59)
-  if (tenYearsPassed === "yes" && 
+  // Calculate if 10 years have passed automatically
+  const tenYearsPassedCalculated = yearsPassedSince >= 10;
+  
+  if (tenYearsPassedCalculated && 
       parseInt(totalConvictions || "0") <= 2 && 
       parseInt(totalFelonies || "0") <= 1) {
     
@@ -326,7 +329,7 @@ export function analyzeEligibility(questionnaireData: any): EligibilityAnalysis 
       timeline: "Annually",
       priority: 2
     });
-  } else if (tenYearsPassed === "no") {
+  } else if (!tenYearsPassedCalculated) {
     eligibilityDetails.primaryReason = "Less than 10 years have passed since conviction for petition-based sealing under CPL § 160.59";
     
     recommendations.push({

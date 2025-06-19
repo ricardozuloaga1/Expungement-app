@@ -252,9 +252,12 @@ export function QuestionnaireStep({ step, data, onUpdate }: QuestionnaireStepPro
             
             <div>
               <Label className="flex items-center text-sm font-medium text-neutral-dark mb-3">
-                Do you know the Penal Law code or charge you were convicted under?
-                {renderTooltip("This helps us determine exact eligibility. Examples: PL 221.10, PL 221.15", "penal-code")}
+                Do you know the specific Penal Law code for your conviction?
+                {renderTooltip("This helps provide more accurate legal analysis. Look for codes like 'PL 221.10' or '221.05' on your court documents.", "penal-code")}
               </Label>
+              <p className="text-sm text-gray-600 mb-4">
+                <strong>Optional but recommended:</strong> Check your court documents, RAP sheet, or Certificate of Disposition for codes like "PL 221.10" or "Penal Law § 221.05"
+              </p>
               <div className="space-y-3">
                 <div className="flex items-center space-x-3">
                   <input
@@ -644,40 +647,13 @@ export function QuestionnaireStep({ step, data, onUpdate }: QuestionnaireStepPro
             
             <div>
               <Label className="flex items-center text-sm font-medium text-neutral-dark mb-3">
-                Have at least 10 years passed since your last conviction or sentence completion?
-                {renderTooltip("You must wait 10 years from completion of sentence to petition for sealing.", "ten-years")}
-              </Label>
-              <div className="grid grid-cols-1 gap-3">
-                {[
-                  { id: "yes", title: "Yes", description: "At least 10 years have passed" },
-                  { id: "no", title: "No", description: "Less than 10 years" },
-                  { id: "not_sure", title: "Not sure", description: "I need to calculate this" }
-                ].map((option) => (
-                  <Button
-                    key={option.id}
-                    variant="outline"
-                    onClick={() => onUpdate("tenYearsPassed", option.id)}
-                    className={`p-4 h-auto text-left justify-start ${
-                      data.tenYearsPassed === option.id ? "border-primary bg-blue-50" : "border-gray-300"
-                    }`}
-                  >
-                    <div>
-                      <div className="font-medium">{option.title}</div>
-                      <div className="text-sm text-neutral-medium">{option.description}</div>
-                    </div>
-                  </Button>
-                ))}
-              </div>
-            </div>
-            
-            <div>
-              <Label className="block text-sm font-medium text-neutral-dark mb-3">
                 Were all fines, probation, parole, or other sentence conditions completed?
+                {renderTooltip("You must have completed all aspects of your sentence to be eligible for petition-based sealing.", "sentence-completed")}
               </Label>
               <div className="grid grid-cols-1 gap-3">
                 {[
-                  { id: "yes", title: "Yes", description: "All conditions completed" },
-                  { id: "no", title: "No", description: "Some conditions not completed" },
+                  { id: "yes", title: "Yes", description: "All sentence conditions completed" },
+                  { id: "no", title: "No", description: "Still have pending obligations" },
                   { id: "not_sure", title: "Not sure", description: "I need to verify this" }
                 ].map((option) => (
                   <Button

@@ -8,6 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { Play, FileText, Star, LogOut, User, BookOpen } from "lucide-react";
 import type { QuestionnaireResponse, EligibilityResult } from "@shared/schema";
+import type { User as UserType } from "@shared/schema";
 
 export default function Home() {
   const { user, isLoading } = useAuth();
@@ -68,7 +69,7 @@ export default function Home() {
             <div className="flex items-center space-x-4">
               <div className="flex items-center text-neutral-medium">
                 <User className="w-4 h-4 mr-2" />
-                <span>{user?.firstName || user?.email}</span>
+                <span>{(user as UserType)?.firstName || (user as UserType)?.email}</span>
               </div>
               <Button 
                 onClick={handleLogout}
@@ -87,7 +88,7 @@ export default function Home() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-neutral-dark mb-4">
-            Welcome back, {user?.firstName || "there"}!
+            Welcome back, {(user as UserType)?.firstName || "there"}!
           </h1>
           <p className="text-xl text-neutral-medium">
             Check your marijuana record expungement eligibility
