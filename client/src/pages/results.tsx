@@ -292,6 +292,18 @@ export default function Results() {
           setShowPremiumModal(false);
           handleDownloadReport();
         }}
+        eligibilityType={
+          result.automaticExpungement ? 'automatic_expungement' :
+          result.automaticSealing ? 'automatic_sealing' :
+          result.petitionBasedSealing ? 'petition_sealing' :
+          'not_eligible'
+        }
+        userComplexity={
+          result.petitionBasedSealing ? 'complex' :
+          result.automaticSealing ? 'moderate' :
+          result.automaticExpungement ? 'simple' :
+          'complex'
+        }
       />
     </div>
   );

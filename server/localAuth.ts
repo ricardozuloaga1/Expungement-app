@@ -5,7 +5,7 @@ import { storage } from "./storage";
 // Simple local auth for development
 export function getSession() {
   return session({
-    secret: process.env.SESSION_SECRET!,
+    secret: process.env.SESSION_SECRET || "dev-secret-key-change-in-production",
     resave: false,
     saveUninitialized: false,
     cookie: {
