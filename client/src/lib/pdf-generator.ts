@@ -52,68 +52,324 @@ function generateFactualAnalysis(result: EligibilityResult, questionnaireData?: 
     return "Analysis based on assessment responses provided during eligibility questionnaire.";
   }
 
-  let analysis = "Based on the information you provided during the assessment:\n\n";
+  let analysis = "";
 
+  // CASE PROFILE SECTION
+  analysis += "CASE PROFILE:\n\n";
+
+  // Basic conviction information
   if (questionnaireData.convictionState) {
-    analysis += `• Conviction Jurisdiction: ${questionnaireData.convictionState === 'ny' ? 'New York State' : questionnaireData.convictionState}\n`;
+    analysis += `Jurisdiction: ${questionnaireData.convictionState === 'ny' ? 'New York State' : questionnaireData.convictionState}\n`;
+  }
+  
+  if (questionnaireData.convictionYear && questionnaireData.convictionMonth) {
+    analysis += `Date of Conviction: ${getMonthName(questionnaireData.convictionMonth)} ${questionnaireData.convictionYear}\n`;
+  } else if (questionnaireData.convictionYear) {
+    analysis += `Year of Conviction: ${questionnaireData.convictionYear}\n`;
   }
 
   if (questionnaireData.offenseTypes) {
     const offenseTypes = Array.isArray(questionnaireData.offenseTypes) ? questionnaireData.offenseTypes : [questionnaireData.offenseTypes];
-    analysis += `• Type of Conviction(s): ${offenseTypes.join(', ')}\n`;
-  }
-
-  if (questionnaireData.convictionYear) {
-    analysis += `• Year of Conviction: ${questionnaireData.convictionYear}\n`;
+    analysis += `Offense Type(s): ${formatOffenseTypes(offenseTypes)}\n`;
   }
 
   if (questionnaireData.convictionLevel) {
-    analysis += `• Conviction Level: ${questionnaireData.convictionLevel}\n`;
+    analysis += `Conviction Classification: ${questionnaireData.convictionLevel.charAt(0).toUpperCase() + questionnaireData.convictionLevel.slice(1)}\n`;
+  }
+  
+  if (questionnaireData.penalCode) {
+    analysis += `Penal Law Code: ${questionnaireData.penalCode}\n`;
+  }
+  
+  // Time analysis
+  if (questionnaireData.convictionYear) {
+    const currentYear = new Date().getFullYear();
+    const yearsElapsed = currentYear - parseInt(questionnaireData.convictionYear);
+    analysis += `Time Elapsed Since Conviction: ${yearsElapsed} years\n`;
   }
 
+  analysis += "\n";
+
+  // Criminal history analysis
   if (questionnaireData.otherConvictions) {
-    analysis += `• Additional Convictions: ${questionnaireData.otherConvictions === 'no' ? 'None reported' : 'Yes'}\n`;
+    analysis += `Additional Criminal History: ${questionnaireData.otherConvictions === 'no' ? 'None reported' : 'Has other convictions'}\n`;
   }
 
-  analysis += `\nConclusion: ${result.automaticExpungement ? 
-    'This conviction profile matches the criteria for automatic expungement under MRTA.' :
-    result.petitionBasedSealing ? 
-    'This conviction profile appears eligible for petition-based sealing relief.' :
-    'This conviction profile does not currently qualify for available relief mechanisms.'
-  }`;
+  if (questionnaireData.onSupervision) {
+    analysis += `Current Supervision Status: ${questionnaireData.onSupervision === 'no' ? 'Not under supervision' : 'Currently on probation/parole'}\n`;
+  }
+  
+  analysis += "\n\n";
+  
+  // ELIGIBILITY PATHWAY ANALYSIS
+  analysis += "ELIGIBILITY PATHWAY ANALYSIS:\n\n";
+  
+  if (result.automaticExpungement) {
+    analysis += generateMRTAAnalysis(questionnaireData);
+  } else if (result.automaticSealing) {
+    analysis += generateCleanSlateAnalysis(questionnaireData);
+  } else if (result.petitionBasedSealing) {
+    analysis += generatePetitionAnalysis(questionnaireData);
+  } else {
+    analysis += generateIneligibilityAnalysis(questionnaireData, result);
+  }
+  
+  // RISK FACTORS AND CONSIDERATIONS
+  analysis += "\n\nRISK FACTORS AND CONSIDERATIONS:\n\n";
+  analysis += generateRiskFactorAnalysis(questionnaireData, result);
+  
+  // DOCUMENTATION STATUS
+  analysis += "\n\nDOCUMENTATION STATUS:\n\n";
+  if (questionnaireData.hasRecords === 'yes') {
+    analysis += "• Client reports having official court records or RAP sheet available\n";
+  } else if (questionnaireData.hasRecords === 'no') {
+    analysis += "• Client does not currently have official court records or RAP sheet\n";
+    if (questionnaireData.wantsRapAssistance === 'yes') {
+      analysis += "• Client has requested assistance obtaining official records\n";
+    }
+  }
+  
+  if (questionnaireData.uploadedDocument) {
+    analysis += `• Document uploaded: ${questionnaireData.uploadedDocument}\n`;
+  }
+  
+  return analysis;
+}
+
+function getMonthName(monthNumber: string): string {
+  const months = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+  return months[parseInt(monthNumber) - 1] || monthNumber;
+}
+
+function formatOffenseTypes(offenseTypes: string[]): string {
+  const formatted = offenseTypes.map(type => {
+    switch(type) {
+      case 'possession': return 'Simple Possession';
+      case 'possession_intent': return 'Possession with Intent to Distribute';
+      case 'sale': return 'Sale/Distribution';
+      case 'cultivation': return 'Cultivation';
+      case 'other': return 'Other marijuana-related offense';
+      case 'dont_know': return 'Unspecified marijuana offense';
+      default: return type;
+    }
+  });
+  return formatted.join(', ');
+}
+
+function generateMRTAAnalysis(questionnaireData: any): string {
+  let analysis = "MRTA Automatic Expungement Analysis:\n\n";
+  
+  if (questionnaireData.convictionYear && parseInt(questionnaireData.convictionYear) < 2021) {
+    analysis += "• Conviction occurred prior to March 31, 2021 (MRTA effective date) ✓\n";
+  }
+  
+  if (questionnaireData.possessionAmount === 'yes') {
+    analysis += "• Conviction involved 3 ounces (85g) or less of marijuana ✓\n";
+  } else if (questionnaireData.possessionAmount === 'no') {
+    analysis += "• WARNING: Conviction involved more than 3 ounces - may affect MRTA eligibility\n";
+  }
+  
+  if (questionnaireData.offenseTypes?.includes('possession')) {
+    analysis += "• Offense type qualifies under MRTA (simple possession) ✓\n";
+  }
+  
+  analysis += "\n\nMRTA Conclusion: This conviction appears to meet the statutory requirements for automatic expungement under CPL § 160.50(3)(k). The conviction should have been automatically expunged without requiring individual action.";
+  
+  return analysis;
+}
+
+function generateCleanSlateAnalysis(questionnaireData: any): string {
+  let analysis = "Clean Slate Act Analysis:\n\n";
+  
+  const currentYear = new Date().getFullYear();
+  const convictionYear = parseInt(questionnaireData.convictionYear || '0');
+  const yearsElapsed = currentYear - convictionYear;
+  
+  if (questionnaireData.convictionLevel === 'misdemeanor') {
+    analysis += `• Misdemeanor conviction requires 3-year waiting period\n`;
+    analysis += `• Time elapsed: ${yearsElapsed} years ${yearsElapsed >= 3 ? '✓' : '(insufficient)'}\n`;
+  } else if (questionnaireData.convictionLevel === 'felony') {
+    analysis += `• Felony conviction requires 8-year waiting period\n`;
+    analysis += `• Time elapsed: ${yearsElapsed} years ${yearsElapsed >= 8 ? '✓' : '(insufficient)'}\n`;
+  }
+  
+  if (questionnaireData.otherConvictions === 'no') {
+    analysis += "• Single eligible conviction requirement met ✓\n";
+  } else {
+    analysis += "• WARNING: Multiple convictions may affect Clean Slate eligibility\n";
+  }
+  
+  if (questionnaireData.onSupervision === 'no') {
+    analysis += "• Not currently under criminal justice supervision ✓\n";
+  } else {
+    analysis += "• WARNING: Current supervision may delay Clean Slate sealing\n";
+  }
+  
+  if (questionnaireData.hasExcludedOffenses === 'no') {
+    analysis += "• No excluded offenses (Class A felonies, sex offenses) ✓\n";
+  } else if (questionnaireData.hasExcludedOffenses === 'yes') {
+    analysis += "• WARNING: Excluded offenses present - not eligible for Clean Slate\n";
+  }
+  
+  analysis += "\n\nClean Slate Conclusion: This conviction profile appears eligible for automatic sealing under CPL § 160.57, effective November 16, 2024.";
+  
+  return analysis;
+}
+
+function generatePetitionAnalysis(questionnaireData: any): string {
+  let analysis = "Petition-Based Sealing Analysis (CPL § 160.59):\n\n";
+  
+  const currentYear = new Date().getFullYear();
+  const convictionYear = parseInt(questionnaireData.convictionYear || '0');
+  const yearsElapsed = currentYear - convictionYear;
+  
+  analysis += `• Ten-year waiting period: ${yearsElapsed} years elapsed ${yearsElapsed >= 10 ? '✓' : '(insufficient)'}\n`;
+  
+  const totalConvictions = parseInt(questionnaireData.totalConvictions || '0');
+  if (totalConvictions <= 2) {
+    analysis += `• Conviction count requirement: ${totalConvictions} convictions (within 2-conviction limit) ✓\n`;
+  } else {
+    analysis += `• WARNING: ${totalConvictions} convictions exceeds 2-conviction limit for petition-based sealing\n`;
+  }
+  
+  if (questionnaireData.sentenceCompleted === 'yes') {
+    analysis += "• All sentence conditions completed ✓\n";
+  } else if (questionnaireData.sentenceCompleted === 'no') {
+    analysis += "• WARNING: Pending sentence obligations must be completed\n";
+  }
+  
+  if (questionnaireData.hasExcludedOffenses === 'no') {
+    analysis += "• No excluded offenses present ✓\n";
+  } else if (questionnaireData.hasExcludedOffenses === 'yes') {
+    analysis += "• WARNING: Excluded offenses may disqualify petition\n";
+  }
+  
+  analysis += "\n\nPetition Conclusion: This case appears to meet the basic statutory requirements for petition-based sealing. Success will depend on judicial discretion considering rehabilitation factors and public safety.";
 
   return analysis;
 }
 
+function generateIneligibilityAnalysis(questionnaireData: any, result: EligibilityResult): string {
+  let analysis = "Ineligibility Analysis:\n";
+  
+  const details = result.eligibilityDetails as any;
+  if (details?.primaryReason) {
+    analysis += `Primary Barrier: ${details.primaryReason}\n\n`;
+  }
+  
+  // Analyze specific barriers
+  const currentYear = new Date().getFullYear();
+  const convictionYear = parseInt(questionnaireData.convictionYear || '0');
+  const yearsElapsed = currentYear - convictionYear;
+  
+  if (questionnaireData.convictionYear && parseInt(questionnaireData.convictionYear) >= 2021) {
+    analysis += "• MRTA Ineligible: Conviction occurred after March 31, 2021\n";
+  }
+  
+  if (questionnaireData.convictionLevel === 'misdemeanor' && yearsElapsed < 3) {
+    analysis += `• Clean Slate Ineligible: Only ${yearsElapsed} years elapsed (requires 3 years for misdemeanors)\n`;
+  } else if (questionnaireData.convictionLevel === 'felony' && yearsElapsed < 8) {
+    analysis += `• Clean Slate Ineligible: Only ${yearsElapsed} years elapsed (requires 8 years for felonies)\n`;
+  }
+  
+  if (yearsElapsed < 10) {
+    analysis += `• Petition Ineligible: Only ${yearsElapsed} years elapsed (requires 10 years)\n`;
+  }
+  
+  const totalConvictions = parseInt(questionnaireData.totalConvictions || '0');
+  if (totalConvictions > 2) {
+    analysis += `• Petition Ineligible: ${totalConvictions} convictions exceeds 2-conviction limit\n`;
+  }
+  
+  if (questionnaireData.hasExcludedOffenses === 'yes') {
+    analysis += "• Multiple Pathways Blocked: Excluded offenses present\n";
+  }
+  
+  analysis += "\nFuture Eligibility: Monitor waiting periods and legislative changes that may expand eligibility options.\n";
+
+  return analysis;
+}
+
+function generateRiskFactorAnalysis(questionnaireData: any, result: EligibilityResult): string {
+  let riskFactors = [];
+  
+  if (questionnaireData.otherConvictions === 'yes') {
+    riskFactors.push("Multiple convictions may complicate eligibility determination");
+  }
+  
+  if (questionnaireData.onSupervision === 'yes') {
+    riskFactors.push("Current supervision status may delay or prevent sealing");
+  }
+  
+  if (questionnaireData.hasExcludedOffenses === 'not_sure') {
+    riskFactors.push("Uncertain conviction history requires verification");
+  }
+  
+  if (questionnaireData.sentenceCompleted === 'not_sure') {
+    riskFactors.push("Uncertain sentence completion status needs verification");
+  }
+  
+  if (questionnaireData.hasRecords === 'no') {
+    riskFactors.push("Lack of official documentation may complicate verification process");
+  }
+  
+  if (!questionnaireData.penalCode || questionnaireData.knowsPenalCode === 'no') {
+    riskFactors.push("Unknown Penal Law code may require additional legal research");
+  }
+  
+  if (riskFactors.length === 0) {
+    return "• No significant risk factors identified based on provided information";
+  }
+  
+  return riskFactors.map(factor => `• ${factor}`).join('\n');
+}
+
 function generateNextSteps(result: EligibilityResult): string {
   if (result.automaticExpungement) {
-    return `1. REQUEST VERIFICATION: Contact the court clerk's office where you were convicted to confirm your record has been expunged and request documentation.
+    return `1. REQUEST VERIFICATION
+   Contact the court clerk's office where you were convicted to confirm your record has been expunged and request documentation.
 
-2. OBTAIN RAP SHEET: Request an updated criminal history record (RAP sheet) from the New York State Division of Criminal Justice Services to verify the expungement is reflected in state records.
+2. OBTAIN RAP SHEET
+   Request an updated criminal history record (RAP sheet) from the New York State Division of Criminal Justice Services to verify the expungement is reflected in state records.
 
-3. BACKGROUND CHECK GUIDANCE: For employment or housing applications, you may legally answer "no" to questions about criminal convictions for expunged offenses.
+3. BACKGROUND CHECK GUIDANCE
+   For employment or housing applications, you may legally answer "no" to questions about criminal convictions for expunged offenses.
 
-4. LEGAL ASSISTANCE: If you encounter issues with the expungement not being properly reflected in records, consider consulting with an attorney who specializes in criminal record relief.`;
+4. LEGAL ASSISTANCE
+   If you encounter issues with the expungement not being properly reflected in records, consider consulting with an attorney who specializes in criminal record relief.`;
   } else if (result.petitionBasedSealing) {
-    return `1. GATHER DOCUMENTATION: Collect all court documents related to your conviction(s), proof of sentence completion, and evidence of rehabilitation.
+    return `1. GATHER DOCUMENTATION
+   Collect all court documents related to your conviction(s), proof of sentence completion, and evidence of rehabilitation.
 
-2. COMPLETE PETITION FORMS: Obtain and complete the required petition forms for record sealing from the court where you were convicted.
+2. COMPLETE PETITION FORMS
+   Obtain and complete the required petition forms for record sealing from the court where you were convicted.
 
-3. LEGAL ASSISTANCE RECOMMENDED: Given the discretionary nature of petition-based sealing, consider consulting with an attorney to strengthen your petition and improve chances of success.
+3. LEGAL ASSISTANCE RECOMMENDED
+   Given the discretionary nature of petition-based sealing, consider consulting with an attorney to strengthen your petition and improve chances of success.
 
-4. FILE PETITION: Submit your completed petition with all supporting documentation to the appropriate court and pay any required filing fees.
+4. FILE PETITION
+   Submit your completed petition with all supporting documentation to the appropriate court and pay any required filing fees.
 
-5. COURT HEARING: Be prepared to attend a court hearing where a judge will consider your petition and any opposition from the prosecution.`;
+5. COURT HEARING
+   Be prepared to attend a court hearing where a judge will consider your petition and any opposition from the prosecution.`;
   } else {
-    return `1. MONITOR ELIGIBILITY: Check back periodically as your eligibility may change when waiting periods are satisfied or new laws are enacted.
+    return `1. MONITOR ELIGIBILITY
+   Check back periodically as your eligibility may change when waiting periods are satisfied or new laws are enacted.
 
-2. CLEAN SLATE ACT: If you have eligible convictions, automatic sealing may begin on November 16, 2024, under the Clean Slate Act. Monitor your record status after this date.
+2. CLEAN SLATE ACT
+   If you have eligible convictions, automatic sealing may begin on November 16, 2024, under the Clean Slate Act. Monitor your record status after this date.
 
-3. MAINTAIN CLEAN RECORD: Avoid new convictions to preserve future eligibility for relief programs.
+3. MAINTAIN CLEAN RECORD
+   Avoid new convictions to preserve future eligibility for relief programs.
 
-4. LEGAL CONSULTATION: Consider consulting with a criminal defense attorney to explore any alternative relief options specific to your circumstances.
+4. LEGAL CONSULTATION
+   Consider consulting with a criminal defense attorney to explore any alternative relief options specific to your circumstances.
 
-5. STAY INFORMED: Keep informed about changes to New York expungement and sealing laws that may expand eligibility in the future.`;
+5. STAY INFORMED
+   Keep informed about changes to New York expungement and sealing laws that may expand eligibility in the future.`;
   }
 }
 
@@ -126,23 +382,122 @@ export function generatePDFReport(result: EligibilityResult, user: User, questio
   // Generate unique report ID
   const reportId = `NYR-${Date.now().toString(36).toUpperCase()}`;
   
+  // Helper function to clean text and remove problematic characters while preserving line breaks
+  const cleanText = (text: string): string => {
+    if (!text) return '';
+    
+    // Remove problematic characters but preserve line breaks and basic structure
+    return text
+      .replace(/[^\w\s\-\.\,\:\;\(\)\[\]\/\\\'\"\!\?\&\%\$\@\#\+\=\<\>\|\~\`\n]/g, ' ') // Keep line breaks
+      .replace(/[ \t]+/g, ' ') // Normalize spaces and tabs but keep line breaks
+      .replace(/\n\s+/g, '\n') // Clean up lines with leading spaces
+      .trim();
+  };
+  
   // Helper function to add text with wrapping
   const addText = (text: string, fontSize: number = 12, isBold: boolean = false, indent: number = 0) => {
     doc.setFontSize(fontSize);
     doc.setFont('helvetica', isBold ? 'bold' : 'normal');
     
     const maxWidth = pageWidth - 40 - indent;
-    const lines = doc.splitTextToSize(text, maxWidth);
+    const lineHeight = fontSize * 0.35 + 4; // Improved line spacing
     
-    lines.forEach((line: string) => {
-      if (yPosition > pageHeight - 30) {
-        doc.addPage();
-        yPosition = 20;
+    // Clean the text first - remove any weird spacing issues and problematic characters
+    const processedText = cleanText(text);
+    
+    // Split text into paragraphs and individual lines
+    const paragraphs = processedText.split('\n\n');
+    
+    paragraphs.forEach((paragraph, paragraphIndex) => {
+      if (paragraph.trim() === '') {
+        yPosition += lineHeight;
+        return;
       }
-      doc.text(line, 20 + indent, yPosition);
-      yPosition += fontSize * 0.5;
+      
+      // Handle numbered lists (1. 2. 3. etc.)
+      if (/^\d+\.\s/.test(paragraph.trim())) {
+        const listItems = paragraph.split(/(?=\n\d+\.\s)/);
+        listItems.forEach(item => {
+          if (item.trim()) {
+            const lines = item.trim().split('\n');
+            lines.forEach((line, lineIndex) => {
+              if (yPosition > pageHeight - 30) {
+                doc.addPage();
+                yPosition = 20;
+              }
+              
+              const wrappedLines = doc.splitTextToSize(line.trim(), maxWidth);
+              wrappedLines.forEach((wrappedLine: string) => {
+                if (yPosition > pageHeight - 30) {
+                  doc.addPage();
+                  yPosition = 20;
+                }
+                doc.text(wrappedLine, 20 + indent + (lineIndex > 0 ? 10 : 0), yPosition);
+                yPosition += lineHeight;
+              });
+            });
+            yPosition += 3; // Space between list items
+          }
+        });
+      }
+      // Handle bullet points
+      else if (paragraph.trim().startsWith('•')) {
+        const bulletLines = paragraph.split('\n');
+        bulletLines.forEach(bulletLine => {
+          if (bulletLine.trim()) {
+            if (yPosition > pageHeight - 30) {
+              doc.addPage();
+              yPosition = 20;
+            }
+            
+            const lines = doc.splitTextToSize(bulletLine.trim(), maxWidth);
+            lines.forEach((line: string, lineIndex: number) => {
+              if (yPosition > pageHeight - 30) {
+                doc.addPage();
+                yPosition = 20;
+              }
+              
+              // Add extra indent for continuation lines of bullet points
+              const bulletIndent = lineIndex > 0 ? 10 : 0;
+              doc.text(line.toString(), 20 + indent + bulletIndent, yPosition);
+              yPosition += lineHeight;
+            });
+          }
+        });
+      } 
+      // Handle regular paragraphs with internal line breaks
+      else {
+        const lines = paragraph.split('\n');
+        lines.forEach(line => {
+          if (line.trim()) {
+            if (yPosition > pageHeight - 30) {
+              doc.addPage();
+              yPosition = 20;
+            }
+            
+            const wrappedLines = doc.splitTextToSize(line.trim(), maxWidth);
+            wrappedLines.forEach((wrappedLine: string) => {
+              if (yPosition > pageHeight - 30) {
+                doc.addPage();
+                yPosition = 20;
+              }
+              doc.text(wrappedLine, 20 + indent, yPosition);
+              yPosition += lineHeight;
+            });
+          } else {
+            // Empty line within paragraph
+            yPosition += lineHeight * 0.3;
+          }
+        });
+      }
+      
+      // Add space between paragraphs
+      if (paragraphIndex < paragraphs.length - 1) {
+        yPosition += lineHeight * 0.5;
+      }
     });
-    yPosition += 5;
+    
+    yPosition += 8; // Space after section
   };
 
   // Professional Header
@@ -184,19 +539,16 @@ export function generatePDFReport(result: EligibilityResult, user: User, questio
   addText('EXECUTIVE SUMMARY', 14, true);
   const executiveSummary = generateExecutiveSummary(result);
   addText(executiveSummary, 11);
-  yPosition += 10;
 
   // SECTION 2: STATUTORY BASIS FOR ELIGIBILITY
   addText('STATUTORY BASIS FOR ELIGIBILITY', 14, true);
   const statutoryBasis = generateStatutoryBasis(result, questionnaireData);
   addText(statutoryBasis, 11);
-  yPosition += 10;
 
   // SECTION 3: ANALYSIS OF SUBMITTED INFORMATION
   addText('ANALYSIS OF SUBMITTED INFORMATION', 14, true);
   const factualAnalysis = generateFactualAnalysis(result, questionnaireData);
   addText(factualAnalysis, 11);
-  yPosition += 10;
 
   // SECTION 4: RECOMMENDED NEXT STEPS
   addText('RECOMMENDED NEXT STEPS', 14, true);
@@ -213,12 +565,14 @@ export function generatePDFReport(result: EligibilityResult, user: User, questio
 
 For personalized legal counsel regarding your specific situation, please consult with an attorney licensed to practice in New York State. For questions about this report or additional assistance, contact NY Record Relief support.`;
   
-  const disclaimerLines = doc.splitTextToSize(disclaimerText, pageWidth - 50);
+  // Clean disclaimer text before processing
+  const cleanDisclaimerText = cleanText(disclaimerText);
+  const disclaimerLines = doc.splitTextToSize(cleanDisclaimerText, pageWidth - 50);
   doc.rect(20, disclaimerY, pageWidth - 40, disclaimerLines.length * 6 + 10, 'F');
   
   doc.setFontSize(10);
   disclaimerLines.forEach((line: string, index: number) => {
-    doc.text(line, 25, yPosition + (index * 6));
+    doc.text(line.toString(), 25, yPosition + (index * 6));
   });
   yPosition += disclaimerLines.length * 6 + 20;
 

@@ -190,17 +190,54 @@ export default function Questionnaire() {
     setQuestionnaireData(prev => ({ ...prev, [field]: value }));
   };
 
-  // Determine next step based on current answers
   const getNextStep = (currentStep: number): number => {
+    // Logic routing based on answers
     switch (currentStep) {
-      case 1: // State question
-        if (questionnaireData.convictionState === "other") {
-          // End flow if not NY conviction
-          return totalSteps + 1; // Exit
+      case 1:
+        // All options from step 1 should continue to step 2, not exit early
+        return 2; // Continue to conviction status
+        
+      case 2:
+        // Route based on conviction status - Fixed: "ny" not "new_york"
+        if (questionnaireData.hasMarijuanaConviction === "yes" && questionnaireData.convictionState === "ny") {
+          return 3; // Continue to full questionnaire for NY convictions
+        } else {
+          return totalSteps + 1; // Go to assessment for other cases (no conviction, other state, etc.)
         }
-        return 2;
+        
+      case 3:
+        return 4; // Continue to conviction timeline
+        
+      case 4:
+        // After timeline, route based on conviction details
+        if (questionnaireData.convictionYear) {
+          const convictionYear = parseInt(questionnaireData.convictionYear);
+          const isPre2021 = convictionYear < 2021;
+          const isSimplePossession = questionnaireData.offenseTypes?.includes('possession');
+          
+          if (isPre2021 && isSimplePossession) {
+            return 5; // Go to MRTA eligibility
+          }
+        }
+        return 6; // Go to Clean Slate eligibility
+        
+      case 5:
+        // After MRTA eligibility, check if they might also qualify for Clean Slate
+        return 6;
+        
+      case 6:
+        // After Clean Slate eligibility
+        return 7; // Go to criminal history
+        
+      case 7:
+        // After criminal history
+        return 8; // Go to petition-based sealing
+        
+      case 8:
+        // After petition-based sealing
+        return 9; // Go to record verification
+        
       default:
-        // Always continue to next step sequentially
         return currentStep + 1;
     }
   };
@@ -209,24 +246,116 @@ export default function Questionnaire() {
     // Save current step data
     saveQuestionnaireMutation.mutate(questionnaireData);
     
-    // Handle special exit conditions
-    if (questionnaireData.convictionState === "other") {
-      toast({
-        title: "Not Supported",
-        description: "We currently only support New York marijuana convictions. Please contact a local attorney for assistance with other states.",
-        variant: "destructive",
-      });
-      setLocation("/");
-      return;
-    }
-    
     const nextStep = getNextStep(currentStep);
     
     if (nextStep <= totalSteps) {
       setCurrentStep(nextStep);
     } else {
-      // Complete assessment
-      completeAssessmentMutation.mutate();
+      // Complete assessment for all cases - create appropriate eligibility result
+      completeAssessmentWithContext();
+    }
+  };
+
+  // New function to handle assessment completion with different contexts
+  const completeAssessmentWithContext = async () => {
+    try {
+      console.log("Starting assessment completion...", questionnaireData);
+      
+      // First save the questionnaire data
+      let currentQuestionnaireId = questionnaireId;
+      
+      if (!currentQuestionnaireId) {
+        console.log("Creating new questionnaire...");
+        const saveResponse = await apiRequest("POST", "/api/questionnaire", {
+          ...questionnaireData,
+          completed: true 
+        });
+        
+        if (!saveResponse.ok) {
+          throw new Error(`Failed to save questionnaire: ${saveResponse.status}`);
+        }
+        
+        const savedData = await saveResponse.json();
+        currentQuestionnaireId = savedData.id;
+        setQuestionnaireId(currentQuestionnaireId);
+        console.log("Created questionnaire with ID:", currentQuestionnaireId);
+      } else {
+        console.log("Updating existing questionnaire:", currentQuestionnaireId);
+        const updateResponse = await apiRequest("PUT", `/api/questionnaire/${currentQuestionnaireId}`, {
+          ...questionnaireData,
+          completed: true 
+        });
+        
+        if (!updateResponse.ok) {
+          throw new Error(`Failed to update questionnaire: ${updateResponse.status}`);
+        }
+      }
+      
+      // Determine the type of assessment based on user responses
+      let assessmentType = {};
+      
+      if (questionnaireData.convictionState === "other") {
+        assessmentType = { otherState: true };
+      } else if (questionnaireData.convictionState === "not_sure") {
+        assessmentType = { unsureState: true };
+      } else if (questionnaireData.hasMarijuanaConviction === "no") {
+        assessmentType = { noConviction: true };
+      } else if (questionnaireData.hasMarijuanaConviction === "not_sure") {
+        assessmentType = { unsureConviction: true };
+      }
+      
+      console.log("Creating eligibility result with assessment type:", assessmentType);
+      
+      // Create eligibility result with appropriate context
+      const response = await apiRequest("POST", "/api/eligibility", {
+        questionnaireResponseId: currentQuestionnaireId,
+        ...assessmentType
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Eligibility API error:", response.status, errorText);
+        throw new Error(`Failed to create eligibility result: ${response.status} - ${errorText}`);
+      }
+      
+      const result = await response.json();
+      console.log("Created eligibility result:", result);
+      
+      if (!result.id) {
+        throw new Error("Eligibility result created but no ID returned");
+      }
+      
+      // Show appropriate success message
+      let toastTitle = "Assessment Complete";
+      let toastDescription = "Your assessment has been completed successfully.";
+      
+      if (questionnaireData.convictionState === "other") {
+        toastDescription = "We've analyzed your situation for out-of-state convictions.";
+      } else if (questionnaireData.convictionState === "not_sure") {
+        toastDescription = "We've provided guidance to help determine your jurisdiction.";
+      } else if (questionnaireData.hasMarijuanaConviction === "no") {
+        toastDescription = "Great news! No expungement needed since you don't have a conviction.";
+      }
+      
+      toast({
+        title: toastTitle,
+        description: toastDescription,
+      });
+      
+      // Add a small delay to ensure the result is saved before redirecting
+      setTimeout(() => {
+        console.log("Redirecting to results page with ID:", result.id);
+        setLocation(`/results/${result.id}`);
+      }, 500);
+      
+    } catch (error) {
+      console.error("Error completing assessment:", error);
+      const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
+      toast({
+        title: "Error",
+        description: `Failed to complete assessment: ${errorMessage}. Please try again.`,
+        variant: "destructive",
+      });
     }
   };
 
@@ -243,43 +372,45 @@ export default function Questionnaire() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background-light flex items-center justify-center">
+      <div className="min-h-screen bg-[#F9FAFB] flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-neutral-medium">Loading...</p>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#4F46E5] mx-auto mb-4"></div>
+          <p className="text-[#6B7280]" style={{ fontFamily: 'Inter, sans-serif' }}>Loading...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Progress Header */}
-      <div className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-neutral-dark">Eligibility Assessment</h2>
-            <Button
-              variant="ghost"
-              onClick={handleSaveAndExit}
-              disabled={saveQuestionnaireMutation.isPending}
-            >
-              <Save className="w-4 h-4 mr-2" />
-              Save & Exit
-            </Button>
+    <div className="min-h-screen homepage-background">
+      {/* Header */}
+      <div className="bg-white border-b border-[#E5E7EB] relative z-10">
+        <div className="w-full px-8 py-4">
+          <div className="flex items-center justify-center">
+            <img src="/assets/clearny-logo.png" alt="ClearNY" className="h-32" />
           </div>
-          
-          <ProgressBar 
-            currentStep={currentStep} 
-            totalSteps={totalSteps} 
-          />
         </div>
       </div>
 
-      {/* Question Content */}
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <Card className="bg-white">
-          <CardContent className="p-8">
+      {/* Main Content - Centered Single Column */}
+      <div className="max-w-3xl mx-auto px-8 py-12 relative z-10">
+        
+        {/* Progress Bar */}
+        <ProgressBar 
+          currentStep={currentStep} 
+          totalSteps={totalSteps} 
+          className="mb-12"
+        />
+
+        {/* Main Card */}
+        <Card 
+          className="bg-white border border-[#E5E7EB]"
+          style={{ 
+            borderRadius: '0.75rem',
+            boxShadow: '0 2px 10px rgba(0, 0, 0, 0.04)'
+          }}
+        >
+          <CardContent className="p-12">
             <QuestionnaireStep
               step={currentStep}
               data={questionnaireData}
@@ -287,25 +418,54 @@ export default function Questionnaire() {
             />
 
             {/* Navigation Buttons */}
-            <div className="flex justify-between mt-12 pt-8 border-t border-gray-200">
+            <div className="flex justify-between items-center mt-12 pt-8 border-t border-[#E5E7EB]">
+              {/* Left side - Save & Exit */}
               <Button
-                variant="outline"
-                onClick={handlePrevious}
-                disabled={currentStep === 1}
-                className={currentStep === 1 ? "invisible" : ""}
+                onClick={handleSaveAndExit}
+                disabled={saveQuestionnaireMutation.isPending}
+                variant="secondary"
+                className="bg-transparent border border-[#E5E7EB] text-[#6B7280] hover:bg-[#F9FAFB] hover:text-[#111827]"
+                style={{ 
+                  borderRadius: '0.5rem',
+                  padding: '0.75rem 1.5rem'
+                }}
               >
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Previous
+                <Save className="w-4 h-4 mr-2" />
+                Save & Exit
               </Button>
               
-              <Button
-                onClick={handleNext}
-                disabled={saveQuestionnaireMutation.isPending || completeAssessmentMutation.isPending}
-                className="bg-primary hover:bg-primary-dark"
-              >
-                {currentStep === totalSteps ? "Complete Assessment" : "Continue"}
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
+              {/* Right side - Previous & Continue */}
+              <div className="flex gap-3">
+                <Button
+                  onClick={handlePrevious}
+                  disabled={currentStep === 1}
+                  variant="secondary"
+                  className={`
+                    bg-transparent border border-[#E5E7EB] text-[#4F46E5] hover:bg-[#F9FAFB]
+                    ${currentStep === 1 ? 'invisible' : ''}
+                  `}
+                  style={{ 
+                    borderRadius: '0.5rem',
+                    padding: '0.75rem 1.5rem'
+                  }}
+                >
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Previous
+                </Button>
+                
+                <Button
+                  onClick={handleNext}
+                  disabled={saveQuestionnaireMutation.isPending || completeAssessmentMutation.isPending}
+                  className="bg-[#E6D5B8] hover:bg-[#D4C2A0] text-[#5D4E37] border-0 font-medium"
+                  style={{ 
+                    borderRadius: '0.5rem',
+                    padding: '0.75rem 1.5rem'
+                  }}
+                >
+                  {currentStep === totalSteps ? "Complete Assessment" : "Continue"}
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>

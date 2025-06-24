@@ -265,7 +265,7 @@ export const documentTemplates: DocumentTemplate[] = [
     title: 'Notice of Motion to Seal Conviction (CPL § 160.59)',
     description: 'Formal petition to the court requesting record sealing under petition-based sealing',
     template: petitionTemplate,
-    requiredFields: ['[YOUR FULL NAME]', '[COUNTY NAME]', '[DOCKET NUMBER]', '[OFFENSE]', '[DATE OF CONVICTION]', '[COURT OF CONVICTION]'],
+    requiredFields: ['[YOUR FULL NAME]', '[COUNTY NAME]', '[DOCKET NUMBER]', '[OFFENSE]', '[DATE OF CONVICTION]', '[COURT OF CONVICTION]', '[COURT ADDRESS]'],
     eligibilityTypes: ['petition_sealing']
   },
   {
@@ -289,7 +289,7 @@ export const documentTemplates: DocumentTemplate[] = [
     title: 'MRTA Expungement Verification Request',
     description: 'Request letter to court clerk for Certificate of Disposition showing MRTA expungement',
     template: mrtaVerificationTemplate,
-    requiredFields: ['[YOUR FULL NAME]', '[DOCKET NUMBER]', '[OFFENSE]', '[DATE OF CONVICTION]', '[COURT OF CONVICTION]'],
+    requiredFields: ['[YOUR FULL NAME]', '[DOCKET NUMBER]', '[OFFENSE]', '[DATE OF CONVICTION]', '[COURT OF CONVICTION]', '[COURT ADDRESS]'],
     eligibilityTypes: ['automatic_expungement']
   }
 ];

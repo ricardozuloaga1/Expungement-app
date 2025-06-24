@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertQuestionnaireResponseSchema, insertEligibilityResultSchema } from "@shared/schema";
 import { z } from "zod";
+import OpenAI from 'openai';
 
 // Helper functions
 function getConvictionDate(month?: string, year?: string): Date | null {
@@ -40,7 +41,7 @@ function determineEligibility(responses: any) {
   const {
     convictionState,
     hasMarijuanaConviction,
-    offenseTypes = [],
+    offenseTypes,
     convictionMonth,
     convictionYear,
     possessionAmount,
@@ -59,9 +60,17 @@ function determineEligibility(responses: any) {
     sentenceCompleted,
     // Legacy fields for backward compatibility
     age,
-    chargeTypes = [],
+    chargeTypes,
     firstArrestDate,
   } = responses;
+
+  // Ensure arrays are never null/undefined and provide safe defaults for other fields
+  const safeOffenseTypes = Array.isArray(offenseTypes) ? offenseTypes : [];
+  const safeChargeTypes = Array.isArray(chargeTypes) ? chargeTypes : [];
+  
+  // Provide safe defaults for other potentially null fields
+  const safeTotalConvictions = totalConvictions || "0";
+  const safeTotalFelonies = totalFelonies || "0";
 
   let automaticExpungement = false;
   let automaticSealing = false;
@@ -94,7 +103,7 @@ function determineEligibility(responses: any) {
   }
 
   // Check for MRTA Automatic Expungement (Best outcome)
-  if (offenseTypes.includes("possession") && possessionAmount === "yes") {
+  if (safeOffenseTypes.includes("possession") && possessionAmount === "yes") {
     const convictionDate = getConvictionDate(convictionMonth, convictionYear);
     if (convictionDate && convictionDate < new Date('2021-03-31')) {
       automaticExpungement = true;
@@ -147,8 +156,8 @@ function determineEligibility(responses: any) {
   const tenYearsHavePassed = yearsPassedSince >= 10;
   
   if (tenYearsHavePassed && 
-      parseInt(totalConvictions || "0") <= 2 && 
-      parseInt(totalFelonies || "0") <= 1 &&
+      parseInt(safeTotalConvictions) <= 2 && 
+      parseInt(safeTotalFelonies) <= 1 &&
       sentenceCompleted === "yes") {
     
     petitionBasedSealing = true;
@@ -181,7 +190,7 @@ function determineEligibility(responses: any) {
     eligibilityDetails.primaryReason = `Not enough time has passed for Clean Slate sealing (need ${yearsRemaining.toFixed(1)} more years)`;
   } else if (otherConvictions === "yes") {
     eligibilityDetails.primaryReason = "Additional convictions prevent automatic sealing";
-  } else if (parseInt(totalConvictions || "0") > 2) {
+  } else if (parseInt(safeTotalConvictions) > 2) {
     eligibilityDetails.primaryReason = "Too many total convictions for petition-based sealing (maximum 2)";
   } else if (!tenYearsHavePassed) {
     const yearsRemaining = 10 - yearsPassedSince;
@@ -302,7 +311,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/eligibility', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const { questionnaireResponseId } = req.body;
+      const { questionnaireResponseId, noConviction, otherState, unsureState, unsureConviction } = req.body;
 
       // Get the questionnaire response
       const questionnaireResponse = await storage.getQuestionnaireResponse(questionnaireResponseId);
@@ -310,8 +319,137 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Questionnaire response not found" });
       }
 
-      // Determine eligibility
-      const eligibility = determineEligibility(questionnaireResponse);
+      let eligibility;
+      
+      // Handle special cases for different assessment types
+      if (noConviction) {
+        eligibility = {
+          automaticExpungement: false,
+          automaticSealing: false,
+          petitionBasedSealing: false,
+          eligibilityDetails: {
+            primaryReason: "No marijuana conviction - no expungement needed",
+            noConvictionCase: true,
+            explanation: "Since you don't have a marijuana conviction, you don't need any expungement or sealing services. Your record is already clear of marijuana-related charges."
+          },
+          recommendations: [
+            {
+              type: "no_action",
+              title: "No Action Required",
+              description: "You don't have a marijuana conviction, so no expungement or sealing is necessary. Your record is already clear.",
+              timeline: "N/A"
+            },
+            {
+              type: "future_reference",
+              title: "Keep This Assessment",
+              description: "Save this assessment for your records. If you ever have questions about your criminal record, you can reference this evaluation.",
+              timeline: "For future reference"
+            },
+            {
+              type: "background_check",
+              title: "Consider a Background Check",
+              description: "If you're concerned about what appears on your record, consider obtaining an official background check to verify your record status.",
+              timeline: "As needed"
+            }
+          ]
+        };
+      } else if (otherState) {
+        eligibility = {
+          automaticExpungement: false,
+          automaticSealing: false,
+          petitionBasedSealing: false,
+          eligibilityDetails: {
+            primaryReason: "Out-of-state conviction - New York laws do not apply",
+            otherStateCase: true,
+            explanation: "This assessment covers New York State marijuana expungement laws only. Your out-of-state conviction may be eligible for relief under that state's laws."
+          },
+          recommendations: [
+            {
+              type: "contact_attorney",
+              title: "Contact Local Attorney",
+              description: "Consult with an attorney licensed in the state where you were convicted to understand your expungement options.",
+              timeline: "As soon as possible"
+            },
+            {
+              type: "research_state_laws",
+              title: "Research State-Specific Laws",
+              description: "Each state has different marijuana expungement laws. Research the specific laws in your conviction state.",
+              timeline: "Before taking action"
+            },
+            {
+              type: "monitor_ny_residency",
+              title: "Monitor New York Developments",
+              description: "If you're a New York resident, stay informed about potential future changes to interstate expungement recognition.",
+              timeline: "Ongoing"
+            }
+          ]
+        };
+      } else if (unsureState) {
+        eligibility = {
+          automaticExpungement: false,
+          automaticSealing: false,
+          petitionBasedSealing: false,
+          eligibilityDetails: {
+            primaryReason: "Jurisdiction unclear - need to determine conviction state",
+            unsureStateCase: true,
+            explanation: "To determine your eligibility for expungement, we need to know which state issued your conviction. Different states have different laws and procedures."
+          },
+          recommendations: [
+            {
+              type: "obtain_records",
+              title: "Obtain Your Criminal Records",
+              description: "Request your criminal history from the FBI or the state where you believe you were convicted to determine jurisdiction.",
+              timeline: "1-2 weeks"
+            },
+            {
+              type: "check_court_documents",
+              title: "Review Court Documents",
+              description: "Look for any court documents, tickets, or paperwork that might indicate which court and state handled your case.",
+              timeline: "Immediate"
+            },
+            {
+              type: "retake_assessment",
+              title: "Retake Assessment",
+              description: "Once you determine your conviction state, retake this assessment with the correct information.",
+              timeline: "After obtaining records"
+            }
+          ]
+        };
+      } else if (unsureConviction) {
+        eligibility = {
+          automaticExpungement: false,
+          automaticSealing: false,
+          petitionBasedSealing: false,
+          eligibilityDetails: {
+            primaryReason: "Conviction status unclear - need to verify criminal history",
+            unsureConvictionCase: true,
+            explanation: "To provide accurate guidance, we need to confirm whether you have a marijuana-related conviction. This requires reviewing your official criminal history."
+          },
+          recommendations: [
+            {
+              type: "background_check",
+              title: "Obtain Official Background Check",
+              description: "Get an official criminal background check from New York State or the FBI to verify your conviction history.",
+              timeline: "1-2 weeks"
+            },
+            {
+              type: "review_documents",
+              title: "Review Personal Records",
+              description: "Look through any personal documents, court papers, or legal correspondence that might clarify your conviction status.",
+              timeline: "Immediate"
+            },
+            {
+              type: "legal_consultation",
+              title: "Consider Legal Consultation",
+              description: "If you're still unsure, a brief consultation with a criminal defense attorney can help clarify your status.",
+              timeline: "As needed"
+            }
+          ]
+        };
+      } else {
+        // Determine eligibility for users with confirmed NY convictions
+        eligibility = determineEligibility(questionnaireResponse);
+      }
 
       // Create eligibility result
       const resultData = insertEligibilityResultSchema.parse({
@@ -336,6 +474,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching user eligibility results:", error);
       res.status(500).json({ message: "Failed to fetch eligibility results" });
+    }
+  });
+
+  app.get('/api/eligibility/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const resultId = parseInt(req.params.id);
+      
+      if (isNaN(resultId)) {
+        return res.status(400).json({ message: "Invalid result ID" });
+      }
+      
+      const result = await storage.getEligibilityResult(resultId);
+      
+      if (!result) {
+        return res.status(404).json({ message: "Eligibility result not found" });
+      }
+      
+      // Ensure the result belongs to the authenticated user
+      if (result.userId !== userId) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      
+      res.json(result);
+    } catch (error) {
+      console.error("Error fetching eligibility result:", error);
+      res.status(500).json({ message: "Failed to fetch eligibility result" });
     }
   });
 
@@ -552,6 +717,131 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error updating education progress:", error);
       res.status(500).json({ message: "Failed to update education progress" });
+    }
+  });
+
+  // Chat API endpoint
+  app.post('/api/chat', isAuthenticated, async (req: any, res) => {
+    try {
+      const { message, userContext, chatHistory } = req.body;
+      
+      if (!message || typeof message !== 'string') {
+        return res.status(400).json({ error: 'Message is required' });
+      }
+
+      // Check if OpenAI API key is available
+      const apiKey = process.env.OPENAI_API_KEY;
+      if (!apiKey || apiKey === 'your-api-key-here') {
+        // Fallback response when no API key is configured
+        return res.json({
+          response: "**Chat Assistant (Demo Mode)**\n\nI'm currently in demo mode. To enable full AI chat functionality, please configure your OpenAI API key.\n\nFor now, here are some key points about NY marijuana expungement:\n\n• **MRTA 2021**: Automatic expungement for possession convictions before March 31, 2021\n• **Clean Slate Act**: Automatic sealing starting November 2024\n• **Petition-Based**: Court petition required for complex cases\n\n*This is general information only, not legal advice. Consult with a qualified attorney for case-specific guidance.*"
+        });
+      }
+
+      // Initialize OpenAI
+      const openai = new OpenAI({
+        apiKey: apiKey
+      });
+
+      // Knowledge base for context
+      const knowledgeBase = `
+NY EXPUNGEMENT KNOWLEDGE BASE:
+
+MRTA 2021 (Automatic Expungement):
+- Applies to marijuana possession convictions before March 31, 2021
+- 3 ounces or less
+- Automatic process - no petition required
+- Should already be completed by courts
+- Citation: NY Cannabis Law § 222
+
+Clean Slate Act (Effective November 2024):
+- Automatic sealing of eligible records
+- Misdemeanor: 3+ years after sentence completion, no other convictions
+- Felony: 8+ years after sentence completion, no other convictions
+- Excludes: Sex offenses, Class A felonies, pending charges, current supervision
+- Citation: NY CPL § 160.59
+
+Petition-Based Sealing (CPL § 160.59):
+- 10+ years since conviction/sentence completion
+- Maximum 2 total convictions, maximum 1 felony
+- All sentence conditions completed
+- No excluded offenses
+- Requires formal court petition
+- 6-12 months processing time
+
+DEFINITIONS:
+- Expungement: Complete destruction of records (MRTA 2021 only)
+- Sealing: Records hidden from public but accessible to certain agencies
+- Excluded offenses: Class A felonies, sex offenses requiring registration
+
+STRICT GUIDELINES:
+- Only answer NY marijuana expungement/sealing questions
+- Never provide specific legal advice
+- Always include legal disclaimers
+- Redirect non-relevant questions
+- Base responses only on provided knowledge
+      `;
+
+      // Build conversation context
+      const systemPrompt = `You are a specialized AI assistant for NY marijuana expungement law. You have access to comprehensive, accurate information about New York State expungement and sealing laws.
+
+STRICT GUIDELINES:
+1. ONLY answer questions directly related to NY marijuana expungement, sealing, MRTA 2021, Clean Slate Act, or petition-based sealing
+2. Base ALL responses on the provided knowledge base - never speculate or assume
+3. Always include appropriate legal disclaimers
+4. If asked about other topics, politely redirect to relevant legal resources
+5. Never provide specific legal advice - only general information about laws and procedures
+6. If uncertain about any detail, state that and recommend consulting an attorney
+
+RESPONSE FORMAT:
+- Start with direct answer to the question
+- Include relevant legal citations when applicable  
+- End with appropriate disclaimers
+- Keep responses concise but comprehensive
+- Use professional, accessible language
+
+PROHIBITED RESPONSES:
+- Case outcome predictions
+- Other states' laws
+- Immigration advice
+- Employment law
+- Federal law questions
+- Specific legal strategy
+
+Remember: You provide general legal information, not legal advice.
+
+${knowledgeBase}
+
+User Context: ${JSON.stringify(userContext)}`;
+
+      // Build messages array
+      const messages = [
+        { role: 'system', content: systemPrompt },
+        ...chatHistory.slice(-4).map((msg: any) => ({
+          role: msg.sender === 'user' ? 'user' : 'assistant',
+          content: msg.content
+        })),
+        { role: 'user', content: message }
+      ];
+
+      // Call OpenAI API
+      const completion = await openai.chat.completions.create({
+        model: 'gpt-3.5-turbo',
+        messages: messages as any,
+        max_tokens: 500,
+        temperature: 0.3, // Lower temperature for more consistent legal information
+      });
+
+      const response = completion.choices[0]?.message?.content || 
+        "I'm sorry, I couldn't generate a response. Please try again.";
+
+      res.json({ response });
+    } catch (error) {
+      console.error('Chat API error:', error);
+      res.status(500).json({ 
+        error: 'Failed to process chat request',
+        response: "I'm sorry, I'm having trouble responding right now. Please try again later or contact support if the issue persists."
+      });
     }
   });
 

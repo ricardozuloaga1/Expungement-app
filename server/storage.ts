@@ -270,6 +270,7 @@ export const storage = {
         createdAt: new Date(),
       };
       mockData.eligibilityResults.set(id, result);
+      console.log("Created eligibility result in mock storage:", result);
       return result;
     }
     
@@ -278,6 +279,21 @@ export const storage = {
       .values(data)
       .returning();
     return result;
+  },
+
+  async getEligibilityResult(id: number): Promise<EligibilityResult | null> {
+    if (isDevelopment) {
+      const result = mockData.eligibilityResults.get(id) || null;
+      console.log("Retrieved eligibility result from mock storage:", id, result);
+      return result;
+    }
+    
+    const [result] = await database
+      .select()
+      .from(schema.eligibilityResults)
+      .where(eq(schema.eligibilityResults.id, id))
+      .limit(1);
+    return result || null;
   },
 
   async getUserEligibilityResults(userId: string): Promise<EligibilityResult[]> {
