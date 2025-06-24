@@ -59,15 +59,19 @@ export default function Home() {
   const hasCompletedAssessment = questionnaireResponses.some(r => r.completed);
   const latestResult = eligibilityResults[0];
 
+  const handleContinueBasic = () => {
+    toast({
+      title: "No problem!",
+      description: "You can always upgrade later. Free tools are still available.",
+    });
+  };
+
   return (
-    <div className="min-h-screen bg-background-light">
+    <div className="min-h-screen homepage-background">
       {/* Navigation Header */}
-      <nav className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <h1 className="text-xl font-bold text-primary">NY Expungement Helper</h1>
-            </div>
+      <nav className="bg-white shadow-sm border-b border-gray-200 relative z-10">
+        <div className="w-full px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-32">
             <div className="flex items-center space-x-4">
               <div className="flex items-center text-neutral-medium">
                 <User className="w-4 h-4 mr-2" />
@@ -82,12 +86,16 @@ export default function Home() {
                 Sign Out
               </Button>
             </div>
+            <div className="absolute left-1/2 transform -translate-x-1/2">
+              <img src="/assets/clearny-logo.png" alt="ClearNY" className="h-32" />
+            </div>
+            <div className="w-0"></div>
           </div>
         </div>
       </nav>
 
       {/* Main Content */}
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="mx-auto px-4 sm:px-6 lg:px-8 py-12 relative z-10">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-neutral-dark mb-4">
             Welcome back, {(user as UserType)?.firstName || "there"}!
@@ -95,167 +103,138 @@ export default function Home() {
           <p className="text-xl text-neutral-medium">
             Check your marijuana record expungement eligibility
           </p>
+          <p className="mt-4 text-lg text-neutral-medium max-w-2xl mx-auto">
+            ClearNY helps you understand your eligibility for clearing or sealing past marijuana convictions under New York law. Our goal is to empower you with clear, step-by-step guidance and resources to take control of your record and your future.
+          </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8 mb-12">
-          {/* Assessment Card */}
-          <Card className="bg-white shadow-lg">
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Play className="w-6 h-6 mr-3 text-primary" />
-                Eligibility Assessment
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {hasCompletedAssessment ? (
-                <div className="space-y-4">
-                  <p className="text-neutral-medium">
-                    You've completed your assessment. Want to update your information?
-                  </p>
+        <div className="flex flex-col md:flex-row gap-8 mb-12 justify-center max-w-4xl mx-auto">
+            {/* Assessment Card */}
+            <Card className="bg-white shadow-lg flex-1 min-w-0 h-[340px] p-8 grid grid-rows-[auto_1fr_auto]">
+              <CardHeader className="p-0 pb-4">
+                <CardTitle className="flex items-center justify-center text-lg text-center">
+                  <Play className="w-6 h-6 mr-3 text-primary" />
+                  Eligibility Assessment
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-0 flex items-center justify-center">
+                {hasCompletedAssessment ? (
+                  <div className="text-center space-y-4">
+                    <p className="text-neutral-medium text-lg">
+                      You've completed your assessment. Want to update your information?
+                    </p>
+                  </div>
+                ) : (
+                  <div className="text-center space-y-4">
+                    <p className="text-neutral-medium text-lg">
+                      Take our 5-minute assessment to check your eligibility for marijuana record expungement.
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+              <div className="p-0 pt-4">
+                {hasCompletedAssessment ? (
                   <Link href="/questionnaire">
-                    <Button className="w-full bg-primary hover:bg-primary-dark">
+                    <Button className="w-full bg-[#E6D5B8] hover:bg-[#D4C2A0] text-[#5D4E37] font-medium">
                       Retake Assessment
                     </Button>
                   </Link>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <p className="text-neutral-medium">
-                    Take our 5-minute assessment to check your eligibility for marijuana record expungement.
-                  </p>
+                ) : (
                   <Link href="/questionnaire">
-                    <Button className="w-full bg-primary hover:bg-primary-dark">
+                    <Button className="w-full bg-[#E6D5B8] hover:bg-[#D4C2A0] text-[#5D4E37] font-medium">
                       <Play className="w-4 h-4 mr-2" />
                       Start Assessment
                     </Button>
                   </Link>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                )}
+              </div>
+            </Card>
 
-          {/* Results Card */}
-          <Card className="bg-white shadow-lg">
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <FileText className="w-6 h-6 mr-3 text-secondary-green" />
-                Your Results
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {latestResult ? (
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-neutral-medium">Status:</span>
-                    <span className={`text-sm font-medium ${
-                      latestResult.automaticExpungement ? 'text-green-600' : 'text-orange-600'
-                    }`}>
-                      {latestResult.automaticExpungement ? 'Eligible for Automatic Expungement' : 'Petition Required'}
-                    </span>
+            {/* Results Card */}
+            <Card className="bg-white shadow-lg flex-1 min-w-0 h-[340px] p-8 grid grid-rows-[auto_1fr_auto]">
+              <CardHeader className="p-0 pb-4">
+                <CardTitle className="flex items-center justify-center text-lg text-center">
+                  <FileText className="w-6 h-6 mr-3 text-secondary-green" />
+                  Your Results
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-0 flex items-center justify-center">
+                {latestResult ? (
+                  <div className="text-center space-y-4">
+                    <div className="space-y-2">
+                      <span className="text-base text-neutral-medium block font-semibold">Status:</span>
+                      <span className={`text-xl font-bold block ${
+                        latestResult.automaticExpungement ? 'text-green-600' : 'text-orange-600'
+                      }`}>
+                        {latestResult.automaticExpungement ? 'Eligible for Automatic Expungement' : 'Petition Required'}
+                      </span>
+                    </div>
                   </div>
+                ) : (
+                  <div className="text-center space-y-4">
+                    <p className="text-neutral-medium text-lg">
+                      Complete your assessment to see your eligibility results.
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+              <div className="p-0 pt-4">
+                {latestResult ? (
                   <Link href={`/results/${latestResult.id}`}>
                     <Button variant="outline" className="w-full">
                       View Detailed Results
                     </Button>
                   </Link>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <p className="text-neutral-medium">
-                    Complete your assessment to see your eligibility results.
-                  </p>
+                ) : (
                   <Button variant="outline" className="w-full" disabled>
                     No Results Available
                   </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Education Card */}
-          <Card className="bg-white shadow-lg">
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <BookOpen className="w-6 h-6 mr-3 text-blue-600" />
-                Legal Education
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <p className="text-neutral-medium">
-                  Learn about NY record relief laws through interactive modules and earn achievement badges.
-                </p>
-                <Link href="/education">
-                  <Button className="w-full bg-blue-600 hover:bg-blue-700">
-                    <BookOpen className="w-4 h-4 mr-2" />
-                    Start Learning
-                  </Button>
-                </Link>
+                )}
               </div>
-            </CardContent>
-          </Card>
+            </Card>
         </div>
 
         {/* Premium Features */}
-        <Card className="bg-gradient-to-r from-orange-50 to-orange-100 border-orange-200">
-          <CardHeader>
-            <CardTitle className="flex items-center text-orange-800">
-              <Star className="w-6 h-6 mr-3" />
-              Premium Legal Assistance
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid md:grid-cols-2 gap-6">
-              <div>
-                <h4 className="font-semibold text-orange-800 mb-2">Get Professional Help</h4>
-                <ul className="text-sm text-orange-700 space-y-1">
-                  <li>• Attorney consultation & case review</li>
-                  <li>• Professional document preparation</li>
-                  <li>• Ongoing legal support & guidance</li>
-                  <li>• Step-by-step filing instructions</li>
-                </ul>
+        <div className="max-w-4xl mx-auto">
+          <Card className="bg-gradient-to-r from-orange-50 to-orange-100 border-orange-200 min-h-[80px] p-4 w-full">
+            <div className="flex items-center justify-between">
+              <div className="flex-grow">
+                <CardHeader className="pb-2 px-0">
+                  <CardTitle className="flex items-center text-lg">
+                    <Star className="w-5 h-5 mr-2 text-orange-600" />
+                    Premium Features
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="px-0 pb-0">
+                  <p className="text-neutral-medium mb-2 text-sm">
+                    Enhanced legal assistance and priority support for complex cases.
+                  </p>
+                  <ul className="text-xs text-neutral-medium space-y-1">
+                    <li>• Attorney consultation referrals</li>
+                    <li>• Court filing assistance</li>
+                    <li>• Document preparation templates</li>
+                    <li>• Priority customer support</li>
+                  </ul>
+                </CardContent>
               </div>
-              <div className="flex flex-col justify-center">
-                <div className="text-center mb-4">
-                  <span className="text-2xl font-bold text-orange-800">$149</span>
-                  <span className="text-sm text-orange-600 block">Starting at</span>
-                </div>
+              <div className="ml-4 flex-shrink-0">
                 <Button 
+                  className="bg-orange-600 hover:bg-orange-700 px-4 py-2 text-sm"
                   onClick={() => setShowPremiumModal(true)}
-                  className="accent-gradient text-white hover:opacity-90"
                 >
                   <Star className="w-4 h-4 mr-2" />
-                  Upgrade to Premium
+                  Upgrade Now
                 </Button>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </Card>
+        </div>
       </div>
 
-      {/* Premium Modal */}
-      <PremiumModal 
+      <PremiumModal
         isOpen={showPremiumModal}
         onClose={() => setShowPremiumModal(false)}
-        onContinueBasic={() => {
-          setShowPremiumModal(false);
-          toast({
-            title: "No problem!",
-            description: "You can always upgrade later. Free tools are still available.",
-          });
-        }}
-        eligibilityType={latestResult ? (
-          latestResult.automaticExpungement ? 'automatic_expungement' :
-          latestResult.automaticSealing ? 'automatic_sealing' :
-          latestResult.petitionBasedSealing ? 'petition_sealing' :
-          'not_eligible'
-        ) : 'unknown'}
-        userComplexity={latestResult ? (
-          latestResult.petitionBasedSealing ? 'complex' :
-          latestResult.automaticSealing ? 'moderate' :
-          latestResult.automaticExpungement ? 'simple' :
-          'complex'
-        ) : 'moderate'}
+        onContinueBasic={handleContinueBasic}
       />
     </div>
   );

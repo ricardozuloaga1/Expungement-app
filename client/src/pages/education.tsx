@@ -215,7 +215,7 @@ export default function Education() {
 
                       <Button 
                         asChild 
-                        className="w-full" 
+                        className={`w-full ${!isCompleted ? 'bg-[#E6D5B8] hover:bg-[#D4C2A0] text-[#5D4E37] font-medium' : ''}`}
                         disabled={isLocked}
                         variant={isCompleted ? "outline" : "default"}
                       >

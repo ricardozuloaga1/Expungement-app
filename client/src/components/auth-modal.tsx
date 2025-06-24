@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { X, Lock } from "lucide-react";
+import { Lock } from "lucide-react";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -35,19 +35,9 @@ export function AuthModal({ isOpen, onClose, isLoginMode, onToggleMode }: AuthMo
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <div className="flex justify-between items-center">
             <DialogTitle className="text-2xl font-bold text-neutral-dark">
               {isLoginMode ? "Welcome Back" : "Create Your Account"}
             </DialogTitle>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onClose}
-              className="h-auto p-0"
-            >
-              <X className="h-5 w-5" />
-            </Button>
-          </div>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-6">
