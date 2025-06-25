@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { ChatProvider } from "@/components/chat/chat-context";
 import { ChatWidget } from "@/components/chat/chat-widget";
 import Landing from "@/pages/landing";
+import LearnMore from "@/pages/learn-more";
 import Home from "@/pages/home";
 import Questionnaire from "@/pages/questionnaire";
 import Results from "@/pages/results";
@@ -33,6 +34,7 @@ function Router() {
           <Route path="/premium" component={Premium} />
         </>
       )}
+      <Route path="/learn-more" component={LearnMore} />
       <Route path="/design-test" component={DesignTest} />
       <Route component={NotFound} />
     </Switch>

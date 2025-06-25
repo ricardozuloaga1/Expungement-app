@@ -505,53 +505,104 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Premium subscription routes
-  app.post('/api/premium/subscribe', isAuthenticated, async (req: any, res) => {
+  app.post('/api/premium/create-checkout-session', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const { 
-        subscriptionType = "consultation", 
-        price = 14900, // $149 in cents for consultation
+        productType = "consultation",
         eligibilityType,
         userComplexity = "moderate"
       } = req.body;
 
-      // Validate subscription type and set appropriate price
-      let validatedPrice = price;
-      if (subscriptionType === "consultation") {
-        validatedPrice = 14900; // $149
-      } else if (subscriptionType === "full_service") {
-        validatedPrice = 29900; // $299
+      const { stripe, STRIPE_PRODUCTS, STRIPE_CONFIG } = await import('./stripe');
+
+      // Validate product type
+      if (!STRIPE_PRODUCTS[productType as keyof typeof STRIPE_PRODUCTS]) {
+        return res.status(400).json({ message: "Invalid product type" });
       }
 
+      const product = STRIPE_PRODUCTS[productType as keyof typeof STRIPE_PRODUCTS];
+
+      // Create Stripe checkout session
+      const session = await stripe.checkout.sessions.create({
+        payment_method_types: ['card'],
+        line_items: [
+          {
+            price_data: {
+              currency: STRIPE_CONFIG.currency,
+              product_data: {
+                name: product.name,
+                description: product.description,
+              },
+              unit_amount: product.price,
+            },
+            quantity: 1,
+          },
+        ],
+        mode: 'payment',
+        success_url: `${STRIPE_CONFIG.successUrl}&session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: STRIPE_CONFIG.cancelUrl,
+        metadata: {
+          userId,
+          productType,
+          eligibilityType: eligibilityType || '',
+          userComplexity,
+        },
+        customer_email: req.user.email,
+      });
+
+      res.json({ sessionId: session.id });
+    } catch (error) {
+      console.error("Error creating Stripe checkout session:", error);
+      res.status(500).json({ message: "Failed to create checkout session" });
+    }
+  });
+
+  // Handle successful payment (called after Stripe redirects back)
+  app.post('/api/premium/confirm-payment', isAuthenticated, async (req: any, res) => {
+    try {
+      const { sessionId } = req.body;
+      const userId = req.user.claims.sub;
+
+      const { stripe } = await import('./stripe');
+
+      // Retrieve the checkout session
+      const session = await stripe.checkout.sessions.retrieve(sessionId);
+
+      if (session.payment_status !== 'paid') {
+        return res.status(400).json({ message: "Payment not completed" });
+      }
+
+      // Verify the session belongs to the authenticated user
+      if (session.metadata?.userId !== userId) {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+
+      // Create the premium subscription
       const subscriptionData = {
         userId,
-        status: "active",
-        subscriptionType,
-        price: validatedPrice,
-        eligibilityType,
-        userComplexity,
+        status: "active" as const,
+        subscriptionType: session.metadata?.productType || "consultation",
+        price: session.amount_total || 0,
+        eligibilityType: session.metadata?.eligibilityType,
+        userComplexity: session.metadata?.userComplexity || "moderate",
+        stripeSessionId: sessionId,
         expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year from now
         createdAt: new Date(),
       };
 
       const subscription = await storage.createPremiumSubscription(subscriptionData);
       
-      // In production, you would:
-      // 1. Process payment with Stripe/payment processor
-      // 2. Send confirmation email to user
-      // 3. Notify attorney team
-      // 4. Create case management record
-      
       res.json({
         ...subscription,
         message: "Premium subscription activated successfully",
-        nextSteps: subscriptionType === "consultation" 
+        nextSteps: subscription.subscriptionType === "consultation" 
           ? "You'll receive an email within 24 hours to schedule your attorney consultation."
           : "Our legal team will contact you within 24 hours to begin your case."
       });
     } catch (error) {
-      console.error("Error creating premium subscription:", error);
-      res.status(400).json({ message: "Failed to create subscription" });
+      console.error("Error confirming payment:", error);
+      res.status(500).json({ message: "Failed to confirm payment" });
     }
   });
 

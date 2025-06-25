@@ -387,7 +387,7 @@ export default function Questionnaire() {
       <div className="bg-white border-b border-[#E5E7EB] relative z-10">
         <div className="w-full px-8 py-4">
           <div className="flex items-center justify-center">
-            <img src="/assets/clearny-logo.png" alt="ClearNY" className="h-32" />
+            <img src="/assets/clean-slater-logo.png" alt="Clean Slater NY" className="h-32" />
           </div>
         </div>
       </div>

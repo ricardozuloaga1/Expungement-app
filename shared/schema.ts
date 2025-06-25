@@ -109,6 +109,7 @@ export const premiumSubscriptions = pgTable("premium_subscriptions", {
   price: integer("price"), // in cents
   eligibilityType: varchar("eligibility_type"), // The user's eligibility type when they subscribed
   userComplexity: varchar("user_complexity"), // "simple" | "moderate" | "complex"
+  stripeSessionId: varchar("stripe_session_id"), // Stripe checkout session ID
   expiresAt: timestamp("expires_at"),
   createdAt: timestamp("created_at").defaultNow(),
 });

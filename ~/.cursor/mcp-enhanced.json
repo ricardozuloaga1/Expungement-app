@@ -1,0 +1,24 @@
+{
+  "mcpServers": {
+    "MCP_DOCKER": {
+      "command": "docker",
+      "args": ["run", "-l", "mcp.client=cursor", "--rm", "-i", "alpine/socat", "STDIO", "TCP:host.docker.internal:8811"]
+    },
+    "puppeteer": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-puppeteer"],
+      "env": {
+        "PUPPETEER_LAUNCH_OPTIONS": "{\"headless\": true, \"args\": [\"--no-sandbox\", \"--disable-setuid-sandbox\"]}",
+        "ALLOW_DANGEROUS": "false"
+      }
+    },
+    "puppeteer-visible": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-puppeteer"],
+      "env": {
+        "PUPPETEER_LAUNCH_OPTIONS": "{\"headless\": false, \"args\": []}",
+        "ALLOW_DANGEROUS": "true"
+      }
+    }
+  }
+} 

@@ -5,6 +5,7 @@ import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
+import { redirectToCheckout, type StripeProductType } from "@/lib/stripe";
 import { X, FileText, UserCheck, Phone, ClipboardCheck, Shield, CreditCard, Calendar, CheckCircle, Star, Clock, Users, Award } from "lucide-react";
 
 interface PremiumModalProps {
@@ -18,25 +19,28 @@ interface PremiumModalProps {
 export function PremiumModal({ isOpen, onClose, onContinueBasic, eligibilityType, userComplexity = 'moderate' }: PremiumModalProps) {
   const { toast } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState<'consultation' | 'full_service'>('consultation');
+  const [selectedPlan, setSelectedPlan] = useState<StripeProductType>('consultation');
 
-  const subscribeMutation = useMutation({
-    mutationFn: async (planType: 'consultation' | 'full_service') => {
-      const price = planType === 'consultation' ? 14900 : 39900; // $149 or $399
-      const response = await apiRequest("POST", "/api/premium/subscribe", {
-        subscriptionType: planType,
-        price: price,
+  const createCheckoutMutation = useMutation({
+    mutationFn: async (productType: StripeProductType) => {
+      const response = await apiRequest("POST", "/api/premium/create-checkout-session", {
+        productType,
         eligibilityType,
         userComplexity,
       });
       return response.json();
     },
-    onSuccess: (data, planType) => {
-      toast({
-        title: "🎉 Welcome to Premium Legal Assistance!",
-        description: `You'll receive a confirmation email with next steps for your ${planType === 'consultation' ? 'consultation' : 'full service'} package.`,
-      });
-      onClose();
+    onSuccess: async (data) => {
+      try {
+        await redirectToCheckout(data.sessionId);
+      } catch (error) {
+        console.error('Stripe checkout error:', error);
+        toast({
+          title: "Payment Processing Error",
+          description: "Unable to redirect to payment. Please try again.",
+          variant: "destructive",
+        });
+      }
     },
     onError: (error) => {
       if (isUnauthorizedError(error)) {
@@ -52,7 +56,7 @@ export function PremiumModal({ isOpen, onClose, onContinueBasic, eligibilityType
       }
       toast({
         title: "Payment Processing Error",
-        description: "Unable to process your payment. Please try again or contact support.",
+        description: "Unable to create payment session. Please try again or contact support.",
         variant: "destructive",
       });
     },
@@ -61,9 +65,7 @@ export function PremiumModal({ isOpen, onClose, onContinueBasic, eligibilityType
   const handleUpgrade = async () => {
     setIsProcessing(true);
     try {
-      // Simulate payment processing (in production, integrate with Stripe)
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      subscribeMutation.mutate(selectedPlan);
+      createCheckoutMutation.mutate(selectedPlan);
     } catch (error) {
       toast({
         title: "Payment Failed",
@@ -146,21 +148,11 @@ export function PremiumModal({ isOpen, onClose, onContinueBasic, eligibilityType
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-4xl max-h-[95vh] overflow-y-auto">
         <DialogHeader>
-          <div className="flex justify-between items-center">
-            <div>
-              <DialogTitle className="text-3xl font-bold text-neutral-dark mb-2">
-                Premium Legal Assistance
-              </DialogTitle>
-              <p className="text-neutral-medium">{getComplexityMessage()}</p>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onClose}
-              className="h-auto p-0"
-            >
-              <X className="h-5 w-5" />
-            </Button>
+          <div>
+            <DialogTitle className="text-3xl font-bold text-neutral-dark mb-2">
+              Premium Legal Assistance
+            </DialogTitle>
+            <p className="text-neutral-medium">{getComplexityMessage()}</p>
           </div>
         </DialogHeader>
 
@@ -238,8 +230,8 @@ export function PremiumModal({ isOpen, onClose, onContinueBasic, eligibilityType
             onClick={() => setSelectedPlan('full_service')}
           >
             <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-              <span className="bg-green-500 text-white px-3 py-1 rounded-full text-xs font-bold">
-                MOST POPULAR
+              <span className="bg-red-500 text-white px-3 py-1 rounded-full text-xs font-bold">
+                50% OFF • LIMITED TIME
               </span>
             </div>
 
@@ -257,9 +249,13 @@ export function PremiumModal({ isOpen, onClose, onContinueBasic, eligibilityType
             </div>
             
             <div className="text-center mb-4">
+              <div className="flex items-center justify-center space-x-2 mb-1">
+                <span className="text-lg text-gray-400 line-through">$600</span>
+                <span className="bg-red-100 text-red-600 px-2 py-1 rounded text-xs font-bold">SAVE $301</span>
+              </div>
               <div className="text-3xl font-bold text-green-600">$299</div>
-              <div className="text-sm text-neutral-medium">Complete service</div>
-              <div className="text-xs text-green-600">Save $150+ vs hiring separately</div>
+              <div className="text-sm text-neutral-medium">Limited time pricing</div>
+              <div className="text-xs text-green-600">Complete service • 50% off regular price</div>
             </div>
 
             <div className="space-y-3">
@@ -284,7 +280,7 @@ export function PremiumModal({ isOpen, onClose, onContinueBasic, eligibilityType
         <div className="space-y-4">
           <Button 
             onClick={handleUpgrade}
-            disabled={isProcessing || subscribeMutation.isPending}
+            disabled={isProcessing || createCheckoutMutation.isPending}
             className={`w-full py-4 text-lg font-semibold ${
               selectedPlan === 'consultation' 
                 ? 'bg-primary hover:bg-primary/90 text-white' 
@@ -299,7 +295,7 @@ export function PremiumModal({ isOpen, onClose, onContinueBasic, eligibilityType
             ) : (
               <>
                 <CreditCard className="w-5 h-5 mr-3" />
-                Get {selectedPlan === 'consultation' ? 'Attorney Consultation' : 'Full Legal Service'} - ${selectedPlan === 'consultation' ? '149' : '399'}
+                Get {selectedPlan === 'consultation' ? 'Attorney Consultation' : 'Full Legal Service'} - ${selectedPlan === 'consultation' ? '149' : '299'}
               </>
             )}
           </Button>
