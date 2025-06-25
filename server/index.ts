@@ -40,7 +40,7 @@ app.use((req, res, next) => {
   next();
 });
 
-(async () => {
+async function initializeApp() {
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
@@ -60,12 +60,27 @@ app.use((req, res, next) => {
     serveStatic(app);
   }
 
-  // Use environment variable for port, defaulting to 5001 for development
-  const port = process.env.PORT ? parseInt(process.env.PORT) : 5001;
-  server.listen({
-    port,
-    host: "0.0.0.0",
-  }, () => {
-    log(`serving on port ${port}`);
-  });
-})();
+  return { app, server };
+}
+
+// Initialize the app
+const initPromise = initializeApp();
+
+// For local development
+if (!process.env.VERCEL) {
+  (async () => {
+    const { server } = await initPromise;
+    
+    // Use environment variable for port, defaulting to 5001 for development
+    const port = process.env.PORT ? parseInt(process.env.PORT) : 5001;
+    server.listen({
+      port,
+      host: "0.0.0.0",
+    }, () => {
+      log(`serving on port ${port}`);
+    });
+  })();
+}
+
+// For Vercel deployment
+export default app;
