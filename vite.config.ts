@@ -31,7 +31,6 @@ export default defineConfig({
       output: {
         manualChunks: undefined,
       },
-      external: ['@rollup/rollup-linux-x64-gnu', '@rollup/rollup-darwin-arm64'],
     },
   },
 });
