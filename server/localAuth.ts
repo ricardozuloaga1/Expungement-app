@@ -26,8 +26,8 @@ export async function setupAuth(app: Express) {
       // Create a mock user for local development
       const mockUser = {
         id: "local-dev-user",
-        email: "dev@example.com",
-        firstName: "Dev",
+        email: "ricardo@example.com",
+        firstName: "Ricardo",
         lastName: "User",
         profileImageUrl: null,
       };

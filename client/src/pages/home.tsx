@@ -87,7 +87,7 @@ export default function Home() {
               </Button>
             </div>
             <div className="absolute left-1/2 transform -translate-x-1/2">
-              <img src="/assets/clearny-logo.png" alt="ClearNY" className="h-32" />
+              <img src="/assets/clean-slater-logo.png" alt="Clean Slater NY" className="h-32" />
             </div>
             <div className="w-0"></div>
           </div>
@@ -100,12 +100,25 @@ export default function Home() {
           <h1 className="text-4xl font-bold text-neutral-dark mb-4">
             Welcome back, {(user as UserType)?.firstName || "there"}!
           </h1>
-          <p className="text-xl text-neutral-medium">
-            Check your marijuana record expungement eligibility
+
+          <p className="text-lg text-neutral-medium max-w-3xl mx-auto mb-6">
+            <strong>ClearNY</strong> transforms complex New York expungement laws into a simple 3-step process: 
+            <span className="text-neutral-dark font-medium"> Assess your eligibility → Get your personalized report → Take action with professional guidance.</span>
           </p>
-          <p className="mt-4 text-lg text-neutral-medium max-w-2xl mx-auto">
-            ClearNY helps you understand your eligibility for clearing or sealing past marijuana convictions under New York law. Our goal is to empower you with clear, step-by-step guidance and resources to take control of your record and your future.
-          </p>
+          <div className="flex justify-center items-center space-x-8 text-sm text-neutral-medium">
+            <div className="flex items-center">
+              <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-xs font-bold mr-2">1</div>
+              <span>5-Min Assessment</span>
+            </div>
+            <div className="flex items-center">
+              <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold mr-2">2</div>
+              <span>Instant Results</span>
+            </div>
+            <div className="flex items-center">
+              <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold mr-2">3</div>
+              <span>Legal Action</span>
+            </div>
+          </div>
         </div>
 
         <div className="flex flex-col md:flex-row gap-8 mb-12 justify-center max-w-4xl mx-auto">

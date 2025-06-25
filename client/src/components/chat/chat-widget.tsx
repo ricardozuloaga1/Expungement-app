@@ -1,10 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { MessageCircle, X, Trash2, Send } from 'lucide-react';
+import { MessageCircle, X, Trash2, Send, Mail, Phone, User } from 'lucide-react';
 import { useChatContext } from './chat-context';
 import { ChatMessage } from './chat-message';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { Textarea } from '../ui/textarea';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
+import { Input } from '../ui/input';
+import { Label } from '../ui/label';
+import { useToast } from '../../hooks/use-toast';
 
 export const ChatWidget: React.FC = () => {
   const {
@@ -17,8 +21,17 @@ export const ChatWidget: React.FC = () => {
   } = useChatContext();
 
   const [inputValue, setInputValue] = useState('');
+  const [showContactForm, setShowContactForm] = useState(false);
+  const [contactForm, setContactForm] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    message: ''
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const { toast } = useToast();
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -45,6 +58,40 @@ export const ChatWidget: React.FC = () => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
+    }
+  };
+
+  const handleContactSubmit = async () => {
+    if (!contactForm.name || !contactForm.email || !contactForm.message) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all required fields (name, email, and message).",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      // Simulate form submission (in real app, this would send to your backend)
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      toast({
+        title: "Message Sent!",
+        description: "Thank you for contacting us. We'll get back to you within 24 hours.",
+      });
+      
+      // Reset form and close modal
+      setContactForm({ name: '', email: '', phone: '', message: '' });
+      setShowContactForm(false);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to send message. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -94,6 +141,49 @@ export const ChatWidget: React.FC = () => {
 
         {/* Messages */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          {/* Contact CTA - Always visible at top */}
+          <div className="bg-gradient-to-r from-[#BFA77B]/10 to-[#E6D5B8]/10 border border-[#BFA77B]/20 rounded-lg p-4 mb-4">
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <h4 className="font-semibold text-[#5D4E37] mb-1 flex items-center">
+                  <Mail className="w-4 h-4 mr-2" />
+                  Need Direct Legal Help?
+                </h4>
+                <p className="text-sm text-gray-600 mb-3">
+                  Connect with our licensed NY attorneys for personalized assistance with your case.
+                </p>
+                <Button
+                  onClick={() => setShowContactForm(true)}
+                  className="bg-[#BFA77B] hover:bg-[#5D4E37] text-white text-sm px-4 py-2 h-auto"
+                  size="sm"
+                >
+                  <Mail className="w-4 h-4 mr-2" />
+                  Contact Our Legal Team
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Welcome message if no messages yet */}
+          {messages.length === 0 && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div className="flex items-start space-x-3">
+                <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                  <MessageCircle className="w-4 h-4 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h4 className="font-medium text-gray-900 mb-2">Welcome to NY Expungement Assistant!</h4>
+                  <p className="text-sm text-gray-600 mb-3">
+                    I can help answer questions about New York marijuana expungement laws, the Clean Slate Act, and MRTA eligibility. 
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    💡 <strong>Tip:</strong> Try asking about specific laws, eligibility requirements, or filing procedures.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {messages.map((message) => (
             <ChatMessage key={message.id} message={message} />
           ))}
@@ -144,6 +234,107 @@ export const ChatWidget: React.FC = () => {
           </div>
         </div>
       </Card>
+
+      {/* Contact Form Modal */}
+      <Dialog open={showContactForm} onOpenChange={setShowContactForm}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center">
+              <Mail className="w-5 h-5 mr-2 text-primary" />
+              Contact Our Legal Team
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="contact-name">Name *</Label>
+              <div className="relative">
+                <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="contact-name"
+                  placeholder="Your full name"
+                  value={contactForm.name}
+                  onChange={(e) => setContactForm(prev => ({ ...prev, name: e.target.value }))}
+                  className="pl-10"
+                />
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="contact-email">Email *</Label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="contact-email"
+                  type="email"
+                  placeholder="your.email@example.com"
+                  value={contactForm.email}
+                  onChange={(e) => setContactForm(prev => ({ ...prev, email: e.target.value }))}
+                  className="pl-10"
+                />
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="contact-phone">Phone (Optional)</Label>
+              <div className="relative">
+                <Phone className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="contact-phone"
+                  type="tel"
+                  placeholder="(555) 123-4567"
+                  value={contactForm.phone}
+                  onChange={(e) => setContactForm(prev => ({ ...prev, phone: e.target.value }))}
+                  className="pl-10"
+                />
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="contact-message">Message *</Label>
+              <Textarea
+                id="contact-message"
+                placeholder="Tell us about your case or question..."
+                value={contactForm.message}
+                onChange={(e) => setContactForm(prev => ({ ...prev, message: e.target.value }))}
+                className="min-h-[100px]"
+              />
+            </div>
+            
+            <div className="text-sm text-muted-foreground">
+              <p>* Required fields</p>
+              <p>We typically respond within 24 hours during business days.</p>
+            </div>
+            
+            <div className="flex space-x-2">
+              <Button
+                onClick={() => setShowContactForm(false)}
+                variant="outline"
+                className="flex-1"
+                disabled={isSubmitting}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleContactSubmit}
+                className="flex-1 bg-[#BFA77B] hover:bg-[#5D4E37] text-white"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Sending...
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-4 h-4 mr-2" />
+                    Send Message
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }; 

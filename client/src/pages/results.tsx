@@ -128,7 +128,7 @@ export default function Results() {
               <span className="text-xl font-semibold text-[#111827]">Assessment Results</span>
             </div>
             <div className="absolute left-1/2 transform -translate-x-1/2">
-              <img src="/assets/clearny-logo.png" alt="ClearNY" className="h-32" />
+              <img src="/assets/clean-slater-logo.png" alt="Clean Slater NY" className="h-32" />
             </div>
             <Button
               variant="ghost"

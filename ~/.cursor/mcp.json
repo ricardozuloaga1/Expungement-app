@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "MCP_DOCKER": {
+      "command": "docker",
+      "args": ["run", "-l", "mcp.client=cursor", "--rm", "-i", "alpine/socat", "STDIO", "TCP:host.docker.internal:8811"]
+    },
+    "puppeteer": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-puppeteer"]
+    }
+  }
+} 
