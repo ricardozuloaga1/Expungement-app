@@ -1,8 +1,0 @@
-<svg width="200" height="60" viewBox="0 0 200 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- Purple checkmark box -->
-  <rect x="0" y="10" width="40" height="40" rx="6" fill="#6366F1" stroke="#6366F1" stroke-width="2"/>
-  <!-- Checkmark -->
-  <path d="M12 28L18 34L32 20" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-  <!-- ClearNY text -->
-  <text x="50" y="38" font-family="Inter, system-ui, -apple-system, sans-serif" font-size="28" font-weight="600" fill="#1F2937">ClearNY</text>
-</svg> 
