@@ -2,9 +2,10 @@
   "version": 2,
   "buildCommand": "npm run build",
   "outputDirectory": "dist/public",
-  "installCommand": "npm install --omit=optional",
+  "installCommand": "npm install --omit=optional --no-optional",
   "env": {
-    "NODE_ENV": "production"
+    "NODE_ENV": "production",
+    "SKIP_INSTALL_SIMPLE_GIT_HOOKS": "true"
   },
   "rewrites": [
     {
