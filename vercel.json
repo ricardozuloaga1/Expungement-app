@@ -1,7 +1,12 @@
 {
   "version": 2,
-  "buildCommand": "npm run build",
+  "buildCommand": "npm ci && npm run build",
   "outputDirectory": "dist/public",
+  "installCommand": "npm ci",
+  "env": {
+    "NODE_ENV": "production",
+    "NPM_CONFIG_OPTIONAL": "false"
+  },
   "rewrites": [
     {
       "source": "/api/(.*)",
