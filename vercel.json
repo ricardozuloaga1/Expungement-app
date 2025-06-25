@@ -1,7 +1,7 @@
 {
   "version": 2,
-  "buildCommand": "rm -rf node_modules package-lock.json && npm install && npm run build",
-  "outputDirectory": "dist/public",
+  "buildCommand": "rm -rf node_modules package-lock.json && npm install && mkdir -p dist && npm run build:server",
+  "outputDirectory": "public",
   "installCommand": "npm install --no-optional",
   "env": {
     "NODE_ENV": "production",
