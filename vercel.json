@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "buildCommand": "npm install --include=optional && npm run build",
+  "buildCommand": "rm -rf node_modules package-lock.json && npm install && npm run build",
   "outputDirectory": "dist/public",
-  "installCommand": "npm install",
+  "installCommand": "npm install --no-optional",
   "env": {
     "NODE_ENV": "production",
     "SKIP_INSTALL_SIMPLE_GIT_HOOKS": "true"
