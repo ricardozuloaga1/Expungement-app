@@ -56,8 +56,8 @@ export default function Home() {
     );
   }
 
-  const hasCompletedAssessment = questionnaireResponses.some(r => r.completed);
-  const latestResult = eligibilityResults[0];
+  const hasCompletedAssessment = Array.isArray(questionnaireResponses) && questionnaireResponses.some(r => r.completed);
+  const latestResult = Array.isArray(eligibilityResults) ? eligibilityResults[0] : null;
 
   const handleContinueBasic = () => {
     toast({
