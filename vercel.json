@@ -1,11 +1,13 @@
 {
   "version": 2,
-  "buildCommand": "rm -rf node_modules package-lock.json && npm install && mkdir -p dist && npm run build:server",
-  "outputDirectory": "public",
+  "buildCommand": "rm -rf node_modules package-lock.json && SKIP_ROLLUP_NATIVE=true npm install && SKIP_ROLLUP_NATIVE=true npm run build",
+  "outputDirectory": "dist/public",
   "installCommand": "npm install --no-optional",
   "env": {
     "NODE_ENV": "production",
-    "SKIP_INSTALL_SIMPLE_GIT_HOOKS": "true"
+    "SKIP_INSTALL_SIMPLE_GIT_HOOKS": "true",
+    "SKIP_ROLLUP_NATIVE": "true",
+    "ROLLUP_NO_WASM": "true"
   },
   "rewrites": [
     {
