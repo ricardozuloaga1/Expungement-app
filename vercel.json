@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "buildCommand": "npm run build",
+  "buildCommand": "npm install --include=optional && npm run build",
   "outputDirectory": "dist/public",
-  "installCommand": "npm install --omit=optional --no-optional",
+  "installCommand": "npm install",
   "env": {
     "NODE_ENV": "production",
     "SKIP_INSTALL_SIMPLE_GIT_HOOKS": "true"
