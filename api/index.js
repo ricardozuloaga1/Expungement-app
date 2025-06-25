@@ -1,3 +1,14 @@
+// Import the built Express app
+let appModule;
+
+async function getApp() {
+  if (!appModule) {
+    // Import the built server
+    appModule = await import('../dist/index.js');
+  }
+  return appModule.default;
+}
+
 export default async function handler(req, res) {
   try {
     // Set CORS headers
@@ -11,16 +22,10 @@ export default async function handler(req, res) {
       return;
     }
     
-    // Simple API response for now
-    if (req.url.startsWith('/api/')) {
-      res.status(200).json({ 
-        message: 'API is working',
-        path: req.url,
-        method: req.method
-      });
-    } else {
-      res.status(404).json({ error: 'Not found' });
-    }
+    const app = await getApp();
+    
+    // Handle the request with the Express app
+    return app(req, res);
   } catch (error) {
     console.error('Function error:', error);
     res.status(500).json({ error: 'Internal server error', details: error.message });
