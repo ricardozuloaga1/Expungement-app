@@ -60,9 +60,11 @@ export default function Home() {
   const latestResult = Array.isArray(eligibilityResults) ? eligibilityResults[0] : null;
 
   const handleContinueBasic = () => {
+    setShowPremiumModal(false);
+    // User is already on home page, so just close the modal
     toast({
-      title: "No problem!",
-      description: "You can always upgrade later. Free tools are still available.",
+      title: "Welcome back!",
+      description: "Free tools and documents are available on this page.",
     });
   };
 
@@ -71,81 +73,80 @@ export default function Home() {
       {/* Navigation Header */}
       <nav className="bg-white shadow-sm border-b border-gray-200 relative z-10">
         <div className="w-full px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-32">
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center text-neutral-medium">
-                <User className="w-4 h-4 mr-2" />
-                <span>{(user as UserType)?.firstName || (user as UserType)?.email}</span>
-              </div>
-              <Button 
-                onClick={handleLogout}
-                variant="outline"
-                size="sm"
-              >
-                <LogOut className="w-4 h-4 mr-2" />
-                Sign Out
-              </Button>
+          <div className="flex justify-between items-center h-16 sm:h-24 lg:h-32">
+            <div className="flex items-center text-neutral-medium text-sm sm:text-base">
+              <User className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+              <span className="truncate max-w-[100px] sm:max-w-none">{(user as UserType)?.firstName || (user as UserType)?.email}</span>
             </div>
             <div className="absolute left-1/2 transform -translate-x-1/2">
-              <img src="/assets/clean-slater-logo.png" alt="Clean Slater NY" className="h-32" />
+              <img src="/assets/clean-slater-logo.png" alt="Clean Slater NY" className="h-12 sm:h-20 lg:h-32" />
             </div>
-            <div className="w-0"></div>
+            <Button 
+              onClick={handleLogout}
+              variant="outline"
+              size="sm"
+              className="text-xs sm:text-sm px-2 sm:px-3"
+            >
+              <LogOut className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Sign Out</span>
+              <span className="sm:hidden">Out</span>
+            </Button>
           </div>
         </div>
       </nav>
 
       {/* Main Content */}
       <div className="mx-auto px-4 sm:px-6 lg:px-8 py-12 relative z-10">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-neutral-dark mb-4">
+        <div className="text-center mb-8 sm:mb-12">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-neutral-dark mb-4 px-2">
             Welcome back, {(user as UserType)?.firstName || "there"}!
           </h1>
 
-          <p className="text-lg text-neutral-medium max-w-3xl mx-auto mb-6">
-            <strong>ClearNY</strong> transforms complex New York expungement laws into a simple 3-step process: 
+          <p className="text-base sm:text-lg text-neutral-medium max-w-3xl mx-auto mb-6 px-4">
+            <strong>Clean Slater</strong> transforms complex New York expungement laws into a simple 3-step process: 
             <span className="text-neutral-dark font-medium"> Assess your eligibility → Get your personalized report → Take action with professional guidance.</span>
           </p>
-          <div className="flex justify-center items-center space-x-8 text-sm text-neutral-medium">
-            <div className="flex items-center">
+          <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-8 text-sm text-neutral-medium px-4">
+            <div className="flex items-center justify-start w-full sm:w-auto sm:justify-center">
               <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-xs font-bold mr-2">1</div>
               <span>5-Min Assessment</span>
             </div>
-            <div className="flex items-center">
+            <div className="flex items-center justify-start w-full sm:w-auto sm:justify-center">
               <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold mr-2">2</div>
               <span>Instant Results</span>
             </div>
-            <div className="flex items-center">
+            <div className="flex items-center justify-start w-full sm:w-auto sm:justify-center">
               <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold mr-2">3</div>
               <span>Legal Action</span>
             </div>
           </div>
         </div>
 
-        <div className="flex flex-col md:flex-row gap-8 mb-12 justify-center max-w-4xl mx-auto">
+        <div className="flex flex-col lg:flex-row gap-6 sm:gap-8 mb-8 sm:mb-12 justify-center max-w-6xl mx-auto">
             {/* Assessment Card */}
-            <Card className="bg-white shadow-lg flex-1 min-w-0 h-[340px] p-8 grid grid-rows-[auto_1fr_auto]">
-              <CardHeader className="p-0 pb-4">
-                <CardTitle className="flex items-center justify-center text-lg text-center">
-                  <Play className="w-6 h-6 mr-3 text-primary" />
+            <Card className="bg-white shadow-lg flex-1 min-w-0 h-auto sm:h-[340px] p-4 sm:p-8 grid grid-rows-[auto_1fr_auto]">
+              <CardHeader className="p-0 pb-3 sm:pb-4">
+                <CardTitle className="flex items-center justify-center text-base sm:text-lg text-center">
+                  <Play className="w-5 h-5 sm:w-6 sm:h-6 mr-2 sm:mr-3 text-primary" />
                   Eligibility Assessment
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-0 flex items-center justify-center">
                 {hasCompletedAssessment ? (
-                  <div className="text-center space-y-4">
-                    <p className="text-neutral-medium text-lg">
+                  <div className="text-center space-y-3 sm:space-y-4">
+                    <p className="text-neutral-medium text-sm sm:text-lg px-2">
                       You've completed your assessment. Want to update your information?
                     </p>
                   </div>
                 ) : (
-                  <div className="text-center space-y-4">
-                    <p className="text-neutral-medium text-lg">
+                  <div className="text-center space-y-3 sm:space-y-4">
+                    <p className="text-neutral-medium text-sm sm:text-lg px-2">
                       Take our 5-minute assessment to check your eligibility for marijuana record expungement.
                     </p>
                   </div>
                 )}
               </CardContent>
-              <div className="p-0 pt-4">
+              <div className="p-0 pt-3 sm:pt-4">
                 {hasCompletedAssessment ? (
                   <Link href="/questionnaire">
                     <Button className="w-full bg-[#E6D5B8] hover:bg-[#D4C2A0] text-[#5D4E37] font-medium">
@@ -164,19 +165,19 @@ export default function Home() {
             </Card>
 
             {/* Results Card */}
-            <Card className="bg-white shadow-lg flex-1 min-w-0 h-[340px] p-8 grid grid-rows-[auto_1fr_auto]">
-              <CardHeader className="p-0 pb-4">
-                <CardTitle className="flex items-center justify-center text-lg text-center">
-                  <FileText className="w-6 h-6 mr-3 text-secondary-green" />
+            <Card className="bg-white shadow-lg flex-1 min-w-0 h-auto sm:h-[340px] p-4 sm:p-8 grid grid-rows-[auto_1fr_auto]">
+              <CardHeader className="p-0 pb-3 sm:pb-4">
+                <CardTitle className="flex items-center justify-center text-base sm:text-lg text-center">
+                  <FileText className="w-5 h-5 sm:w-6 sm:h-6 mr-2 sm:mr-3 text-secondary-green" />
                   Your Results
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-0 flex items-center justify-center">
                 {latestResult ? (
-                  <div className="text-center space-y-4">
+                  <div className="text-center space-y-3 sm:space-y-4">
                     <div className="space-y-2">
-                      <span className="text-base text-neutral-medium block font-semibold">Status:</span>
-                      <span className={`text-xl font-bold block ${
+                      <span className="text-sm sm:text-base text-neutral-medium block font-semibold">Status:</span>
+                      <span className={`text-lg sm:text-xl font-bold block px-2 ${
                         latestResult.automaticExpungement ? 'text-green-600' : 'text-orange-600'
                       }`}>
                         {latestResult.automaticExpungement ? 'Eligible for Automatic Expungement' : 'Petition Required'}
@@ -184,17 +185,17 @@ export default function Home() {
                     </div>
                   </div>
                 ) : (
-                  <div className="text-center space-y-4">
-                    <p className="text-neutral-medium text-lg">
+                  <div className="text-center space-y-3 sm:space-y-4">
+                    <p className="text-neutral-medium text-sm sm:text-lg px-2">
                       Complete your assessment to see your eligibility results.
                     </p>
                   </div>
                 )}
               </CardContent>
-              <div className="p-0 pt-4">
+              <div className="p-0 pt-3 sm:pt-4">
                 {latestResult ? (
                   <Link href={`/results/${latestResult.id}`}>
-                    <Button variant="outline" className="w-full">
+                    <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
                       View Detailed Results
                     </Button>
                   </Link>
@@ -205,42 +206,32 @@ export default function Home() {
                 )}
               </div>
             </Card>
-        </div>
 
-        {/* Premium Features */}
-        <div className="max-w-4xl mx-auto">
-          <Card className="bg-gradient-to-r from-orange-50 to-orange-100 border-orange-200 min-h-[80px] p-4 w-full">
-            <div className="flex items-center justify-between">
-              <div className="flex-grow">
-                <CardHeader className="pb-2 px-0">
-                  <CardTitle className="flex items-center text-lg">
-                    <Star className="w-5 h-5 mr-2 text-orange-600" />
-                    Premium Features
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="px-0 pb-0">
-                  <p className="text-neutral-medium mb-2 text-sm">
-                    Enhanced legal assistance and priority support for complex cases.
+            {/* Premium Features Card */}
+            <Card className="bg-gradient-to-r from-orange-50 to-orange-100 border-orange-200 shadow-lg flex-1 min-w-0 h-auto sm:h-[340px] p-4 sm:p-8 grid grid-rows-[auto_1fr_auto]">
+              <CardHeader className="p-0 pb-3 sm:pb-4">
+                <CardTitle className="flex items-center justify-center text-base sm:text-lg text-center">
+                  <Star className="w-5 h-5 sm:w-6 sm:h-6 mr-2 sm:mr-3 text-orange-600" />
+                  Premium Features
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-0 flex items-center justify-center">
+                <div className="text-center space-y-3 sm:space-y-4">
+                  <p className="text-neutral-medium text-sm sm:text-lg px-2">
+                    Enhanced legal assistance and priority support with professional oversight. Get attorney guidance and streamlined document preparation.
                   </p>
-                  <ul className="text-xs text-neutral-medium space-y-1">
-                    <li>• Attorney consultation referrals</li>
-                    <li>• Court filing assistance</li>
-                    <li>• Document preparation templates</li>
-                    <li>• Priority customer support</li>
-                  </ul>
-                </CardContent>
-              </div>
-              <div className="ml-4 flex-shrink-0">
+                </div>
+              </CardContent>
+              <div className="p-0 pt-3 sm:pt-4">
                 <Button 
-                  className="bg-orange-600 hover:bg-orange-700 px-4 py-2 text-sm"
+                  className="bg-orange-600 hover:bg-orange-700 px-4 py-2 text-sm w-full"
                   onClick={() => setShowPremiumModal(true)}
                 >
                   <Star className="w-4 h-4 mr-2" />
                   Upgrade Now
                 </Button>
               </div>
-            </div>
-          </Card>
+            </Card>
         </div>
       </div>
 

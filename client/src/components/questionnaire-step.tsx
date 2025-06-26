@@ -67,7 +67,7 @@ export function QuestionnaireStep({ step, data, onUpdate }: QuestionnaireStepPro
                 Which state were you convicted in?
                 {renderTooltip("We currently only support New York convictions. Other states have different laws.", "state")}
               </Label>
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {[
                   { id: "ny", title: "New York", description: "All NY counties supported" },
                   { id: "other", title: "Another state", description: "Not currently supported" },
@@ -105,7 +105,7 @@ export function QuestionnaireStep({ step, data, onUpdate }: QuestionnaireStepPro
                 Have you ever been convicted of a marijuana-related offense in New York?
                 {renderTooltip("A conviction means you pleaded guilty or were found guilty by a court.", "conviction")}
               </Label>
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {[
                   { id: "yes", title: "Yes", description: "I have been convicted" },
                   { id: "no", title: "No", description: "I have not been convicted" },
@@ -143,7 +143,7 @@ export function QuestionnaireStep({ step, data, onUpdate }: QuestionnaireStepPro
                 What type of marijuana conviction(s) do you have? (Select all that apply)
                 {renderTooltip("Different offense types have different eligibility rules for expungement. You can select multiple if you have more than one type.", "offense-type")}
               </Label>
-                <div className="space-y-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {[
                   { id: "possession", title: "Possession (personal use)", description: "Simple possession for personal consumption" },
                   { id: "possession_intent", title: "Possession with intent to distribute", description: "Possession with plans to sell or distribute" },
@@ -247,7 +247,7 @@ export function QuestionnaireStep({ step, data, onUpdate }: QuestionnaireStepPro
               <p className="text-sm text-gray-600 mb-4">
                 <strong>Optional but recommended:</strong> Check your court documents, RAP sheet, or Certificate of Disposition for codes like "PL 221.10" or "Penal Law § 221.05"
               </p>
-              <div className="space-y-3">
+              <div className="flex flex-col sm:flex-row gap-4 sm:gap-8">
                 <div className="flex items-center space-x-3">
                   <input
                     type="radio"
@@ -385,7 +385,7 @@ export function QuestionnaireStep({ step, data, onUpdate }: QuestionnaireStepPro
                 Was your conviction a felony or a misdemeanor?
                 {renderTooltip("Felonies require 8 years, misdemeanors require 3 years for automatic sealing.", "felony-misdemeanor")}
               </Label>
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 gap-4">
                 {[
                   { id: "felony", title: "Felony", description: "More serious offense" },
                   { id: "misdemeanor", title: "Misdemeanor", description: "Less serious offense" },

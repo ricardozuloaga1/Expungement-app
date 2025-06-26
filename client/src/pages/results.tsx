@@ -116,36 +116,39 @@ export default function Results() {
     <div className="min-h-screen homepage-background">
       {/* Header */}
       <div className="bg-white border-b border-[#E5E7EB] relative z-10">
-        <div className="w-full px-8 py-4">
+        <div className="w-full px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2 sm:space-x-4">
               <Link href="/">
-                <Button variant="ghost" size="sm">
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Back to Home
+                <Button variant="ghost" size="sm" className="px-2 sm:px-3">
+                  <ArrowLeft className="w-4 h-4 mr-1 sm:mr-2" />
+                  <span className="hidden sm:inline">Back to Home</span>
+                  <span className="sm:hidden">Back</span>
                 </Button>
               </Link>
-              <span className="text-xl font-semibold text-[#111827]">Assessment Results</span>
+
             </div>
             <div className="absolute left-1/2 transform -translate-x-1/2">
-              <img src="/assets/clean-slater-logo.png" alt="Clean Slater NY" className="h-32" />
+              <img src="/assets/clean-slater-logo.png" alt="Clean Slater NY" className="h-12 sm:h-20 lg:h-32" />
             </div>
             <Button
               variant="ghost"
               onClick={handleLogout}
-              className="text-[#6B7280] hover:text-[#111827]"
+              className="text-[#6B7280] hover:text-[#111827] px-2 sm:px-3"
+              size="sm"
             >
-              <LogOut className="w-4 h-4 mr-2" />
-              Sign Out
+              <LogOut className="w-4 h-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Sign Out</span>
+              <span className="sm:hidden">Out</span>
             </Button>
           </div>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="max-w-4xl mx-auto px-8 py-12 relative z-10">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12 relative z-10">
         {/* Status Banner */}
-        <div className={`rounded-lg p-6 mb-8 ${
+        <div className={`rounded-lg p-4 sm:p-6 mb-6 sm:mb-8 ${
           eligibilityDetails.noConvictionCase ? 'bg-green-50 border border-green-200' :
           eligibilityDetails.otherStateCase ? 'bg-blue-50 border border-blue-200' :
           eligibilityDetails.unsureStateCase ? 'bg-yellow-50 border border-yellow-200' :
@@ -174,7 +177,7 @@ export default function Results() {
               <AlertCircle className="w-8 h-8 text-red-600 mr-4" />
             )}
             <div>
-              <h2 className="text-2xl font-bold mb-2">
+              <h2 className="text-xl sm:text-2xl font-bold mb-2">
                 {eligibilityDetails.noConvictionCase ? 'No Marijuana Conviction Found' :
                  eligibilityDetails.otherStateCase ? 'Out-of-State Conviction Detected' :
                  eligibilityDetails.unsureStateCase ? 'Conviction State Unclear' :
@@ -198,27 +201,72 @@ export default function Results() {
           </div>
         </div>
 
-        {/* Assessment Report */}
-        <Card className="mb-8">
-          <CardHeader className="flex items-center justify-between">
+        {/* Professional Guidance */}
+        <Card className="mb-6 sm:mb-8 bg-gradient-to-r from-orange-50 to-orange-100 border-orange-200">
+          <CardHeader>
             <CardTitle className="flex items-center">
-              <FileText className="w-6 h-6 mr-3" />
-              Assessment Report
+              <Star className="w-5 h-5 sm:w-6 sm:h-6 mr-2 sm:mr-3 text-orange-600" />
+              Need Professional Guidance?
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-gray-700 mb-4 text-sm sm:text-base">
+              If you need further assistance with your case, consider these options:
+            </p>
+            <ul className="text-gray-600 space-y-2 mb-6 text-sm sm:text-base">
+              <li className="flex items-center">
+                <span className="w-2 h-2 bg-orange-400 rounded-full mr-3"></span>
+                Attorney consultation and legal advice
+              </li>
+              <li className="flex items-center">
+                <span className="w-2 h-2 bg-orange-400 rounded-full mr-3"></span>
+                Professional document preparation
+              </li>
+              <li className="flex items-center">
+                <span className="w-2 h-2 bg-orange-400 rounded-full mr-3"></span>
+                Court filing assistance and guidance
+              </li>
+            </ul>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Button 
+                onClick={() => setShowPremiumModal(true)}
+                className="bg-orange-600 hover:bg-orange-700 flex-1"
+              >
+                <Star className="w-4 h-4 mr-2" />
+                Get Premium Support
+              </Button>
+              <Link href="/education" className="flex-1">
+                <Button variant="outline" className="w-full border-orange-300 text-orange-700 hover:bg-orange-50">
+                  Learn More
+                </Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Assessment Report */}
+        <Card className="mb-6 sm:mb-8">
+          <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-0">
+            <CardTitle className="flex items-center">
+              <FileText className="w-5 h-5 sm:w-6 sm:h-6 mr-2 sm:mr-3" />
+              <span className="text-lg sm:text-xl">Assessment Report</span>
             </CardTitle>
             <Button 
               onClick={handleDownloadReport}
-              className="bg-primary hover:bg-primary-dark"
+              className="bg-primary hover:bg-primary-dark w-full sm:w-auto"
+              size="sm"
             >
               <Download className="w-4 h-4 mr-2" />
-              Download PDF Report
+              <span className="hidden sm:inline">Download PDF Report</span>
+              <span className="sm:hidden">Download PDF</span>
             </Button>
           </CardHeader>
           <CardContent>
             <div className="space-y-6">
               {/* Case Profile */}
               <div>
-                <h4 className="font-semibold text-gray-800 mb-3">Case Profile</h4>
-                <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+                <h4 className="font-semibold text-gray-800 mb-3 text-base sm:text-lg">Case Profile</h4>
+                <div className="bg-gray-50 rounded-lg p-3 sm:p-4 space-y-2 text-sm sm:text-base">
                   {questionnaireResponse?.convictionState && (
                     <p><span className="font-medium">Conviction State:</span> {questionnaireResponse.convictionState === 'ny' ? 'New York' : questionnaireResponse.convictionState}</p>
                   )}
@@ -290,7 +338,7 @@ export default function Results() {
         </Card>
 
         {/* Next Steps */}
-        <Card className="mb-8">
+        <Card className="mb-6 sm:mb-8">
           <CardHeader>
             <CardTitle className="flex items-center">
               <ArrowRight className="w-6 h-6 mr-3" />
@@ -399,7 +447,7 @@ export default function Results() {
         </Card>
 
         {/* Actions */}
-        <div className="flex flex-col sm:flex-row gap-4">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
           <Link href="/questionnaire" className="flex-1">
             <Button variant="outline" className="w-full">
               <RotateCcw className="w-4 h-4 mr-2" />

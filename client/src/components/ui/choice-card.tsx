@@ -34,16 +34,16 @@ const ChoiceCard = React.forwardRef<HTMLButtonElement, ChoiceCardProps>(
           variant: isSelected ? "active" : "default", 
           className 
         }),
-        "rounded-[0.75rem] p-6 text-[#111827]"
+        "rounded-[0.75rem] p-4 sm:p-6 text-[#111827]"
       )}
       {...props}
     >
       <div className="space-y-1">
-        <div className="font-medium text-base leading-6">
+        <div className="font-medium text-sm sm:text-base leading-5 sm:leading-6">
           {title}
         </div>
         {description && (
-          <div className="text-sm text-[#6B7280] leading-5">
+          <div className="text-xs sm:text-sm text-[#6B7280] leading-4 sm:leading-5">
             {description}
           </div>
         )}

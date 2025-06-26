@@ -58,9 +58,9 @@ export default function Premium() {
   // Show payment status if we're handling a Stripe redirect
   if (paymentStatus) {
     return (
-      <div className="premium-background">
-        <div className="container mx-auto px-4 py-8 max-w-2xl relative z-10">
-          <Card>
+      <div className="premium-background min-h-screen flex items-center justify-center">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10 w-full">
+          <Card className="shadow-xl">
           <CardHeader className="text-center">
             <div className="flex justify-center mb-4">
               {paymentStatus === 'processing' && (
@@ -76,27 +76,27 @@ export default function Premium() {
                 <XCircle className="w-16 h-16 text-red-500" />
               )}
             </div>
-            <CardTitle className="text-2xl">
+            <CardTitle className="text-xl sm:text-2xl lg:text-3xl">
               {paymentStatus === 'processing' && 'Processing Your Payment...'}
               {paymentStatus === 'success' && 'Payment Successful!'}
               {paymentStatus === 'cancelled' && 'Payment Cancelled'}
               {paymentStatus === 'error' && 'Payment Error'}
             </CardTitle>
           </CardHeader>
-          <CardContent className="text-center space-y-4">
+          <CardContent className="text-center space-y-4 sm:space-y-6">
             {paymentStatus === 'processing' && (
-              <p className="text-gray-600">
+              <p className="text-gray-600 text-sm sm:text-base">
                 Please wait while we confirm your payment with Stripe...
               </p>
             )}
             {paymentStatus === 'success' && (
               <>
-                <p className="text-gray-600">
+                <p className="text-gray-600 text-sm sm:text-base">
                   Your premium subscription has been activated successfully. You'll receive a confirmation email with next steps.
                 </p>
                 <Button 
                   onClick={() => setPaymentStatus(null)}
-                  className="bg-[#BFA77B] hover:bg-[#5D4E37] text-white"
+                  className="bg-blue-600 hover:bg-blue-700 text-white w-full sm:w-auto"
                 >
                   Continue to Premium Dashboard
                 </Button>
@@ -104,12 +104,13 @@ export default function Premium() {
             )}
             {paymentStatus === 'cancelled' && (
               <>
-                <p className="text-gray-600">
+                <p className="text-gray-600 text-sm sm:text-base">
                   Your payment was cancelled. No charges were made to your account.
                 </p>
                 <Button 
                   onClick={() => setPaymentStatus(null)}
                   variant="outline"
+                  className="w-full sm:w-auto"
                 >
                   Return to Premium Options
                 </Button>
@@ -117,12 +118,13 @@ export default function Premium() {
             )}
             {paymentStatus === 'error' && (
               <>
-                <p className="text-gray-600">
+                <p className="text-gray-600 text-sm sm:text-base">
                   There was an issue processing your payment. Please contact our support team.
                 </p>
                 <Button 
                   onClick={() => setPaymentStatus(null)}
                   variant="outline"
+                  className="w-full sm:w-auto"
                 >
                   Try Again
                 </Button>
@@ -136,7 +138,7 @@ export default function Premium() {
   }
 
   return (
-    <div className="premium-background">
+    <div className="premium-background min-h-screen">
       <div className="relative z-10">
         <PremiumDashboard />
       </div>
