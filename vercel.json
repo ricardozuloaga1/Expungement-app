@@ -2,13 +2,10 @@
   "version": 2,
   "buildCommand": "npm run build",
   "outputDirectory": "dist/public",
-  "installCommand": "npm ci --no-optional --no-fund --no-audit || npm install --no-optional --no-fund --no-audit",
+  "installCommand": "npm ci --include=optional --no-fund --no-audit",
   "env": {
     "NODE_ENV": "production",
     "SKIP_INSTALL_SIMPLE_GIT_HOOKS": "true",
-    "SKIP_ROLLUP_NATIVE": "true",
-    "ROLLUP_NO_WASM": "true",
-    "npm_config_optional": "false",
     "npm_config_fund": "false",
     "npm_config_audit": "false"
   },
