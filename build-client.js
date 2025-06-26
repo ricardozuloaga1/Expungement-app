@@ -56,6 +56,10 @@ async function buildClient() {
       },
       define: {
         'process.env.NODE_ENV': '"production"',
+        'import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY': JSON.stringify(process.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_51RYyBO04uCBKkJtweqRQH19acbABDnlarnrSoRBG9vUq05xd2M3SAtsQV1t19oxoyePD3ekkUvPu0K855IINub6200tjSykymw'),
+        'import.meta.env.MODE': '"production"',
+        'import.meta.env.DEV': 'false',
+        'import.meta.env.PROD': 'true',
         global: 'globalThis',
       },
       external: [],
