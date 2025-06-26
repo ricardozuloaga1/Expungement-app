@@ -163,7 +163,7 @@ export default function LearnMore() {
               <Card>
                 <CardContent className="pt-6">
                   <div className="flex items-start">
-                    <Users className="w-5 h-5 text-purple-600 mr-3 mt-1 flex-shrink-0" />
+                    <Users className="w-5 h-5 text-blue-600 mr-3 mt-1 flex-shrink-0" />
                     <div>
                       <h3 className="font-semibold mb-2">Community Outreach Programs</h3>
                       <p className="text-neutral-medium">State and local organizations are expanding awareness campaigns to help eligible individuals understand their rights and access available relief.</p>
@@ -203,7 +203,7 @@ export default function LearnMore() {
                 </a>
               </div>
               <div className="flex flex-col items-center">
-                <MapPin className="w-8 h-8 text-purple-600 mb-3" />
+                <MapPin className="w-8 h-8 text-blue-600 mb-3" />
                 <h3 className="font-semibold mb-2">Serving</h3>
                 <p className="text-neutral-medium">All of New York State<br/>Remote consultations available</p>
               </div>

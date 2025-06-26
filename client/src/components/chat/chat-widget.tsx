@@ -97,21 +97,21 @@ export const ChatWidget: React.FC = () => {
 
   if (!isOpen) {
     return (
-      <div className="fixed bottom-16 right-6 z-50">
+      <div className="fixed bottom-4 right-4 z-50">
         <Button
           onClick={toggleChat}
-          className="h-32 w-32 rounded-full bg-[#BFA77B] hover:bg-[#E6D5B8] text-[#5D4E37] shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300"
+          className="h-14 w-14 sm:h-16 sm:w-16 rounded-full bg-[#BFA77B] hover:bg-[#E6D5B8] text-[#5D4E37] shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
           size="icon"
         >
-          <MessageCircle className="h-16 w-16" />
+          <MessageCircle className="h-6 w-6 sm:h-7 sm:w-7" />
         </Button>
       </div>
     );
   }
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 w-96 max-w-[calc(100vw-2rem)]">
-      <Card className="h-[600px] max-h-[80vh] flex flex-col shadow-2xl">
+    <div className="fixed bottom-4 right-4 z-50 w-80 sm:w-96 max-w-[calc(100vw-2rem)]">
+      <Card className="h-[500px] sm:h-[550px] max-h-[75vh] flex flex-col shadow-xl">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b bg-primary text-primary-foreground rounded-t-lg">
           <div className="flex items-center space-x-2">
@@ -154,7 +154,7 @@ export const ChatWidget: React.FC = () => {
                 </p>
                 <Button
                   onClick={() => setShowContactForm(true)}
-                  className="bg-[#BFA77B] hover:bg-[#5D4E37] text-white text-sm px-4 py-2 h-auto"
+                  className="bg-blue-600 hover:bg-blue-700 text-white text-sm px-4 py-2 h-auto"
                   size="sm"
                 >
                   <Mail className="w-4 h-4 mr-2" />
@@ -219,7 +219,7 @@ export const ChatWidget: React.FC = () => {
               onClick={handleSendMessage}
               disabled={!inputValue.trim() || isTyping}
               size="icon"
-              className="h-11 w-11 shrink-0"
+              className="h-11 w-11 shrink-0 bg-blue-600 hover:bg-blue-700 text-white"
             >
               <Send className="h-4 w-4" />
             </Button>
@@ -316,7 +316,7 @@ export const ChatWidget: React.FC = () => {
               </Button>
               <Button
                 onClick={handleContactSubmit}
-                className="flex-1 bg-[#BFA77B] hover:bg-[#5D4E37] text-white"
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? (

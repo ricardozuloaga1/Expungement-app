@@ -385,21 +385,21 @@ export default function Questionnaire() {
     <div className="min-h-screen homepage-background">
       {/* Header */}
       <div className="bg-white border-b border-[#E5E7EB] relative z-10">
-        <div className="w-full px-8 py-4">
+        <div className="w-full px-4 sm:px-8 py-3 sm:py-4">
           <div className="flex items-center justify-center">
-            <img src="/assets/clean-slater-logo.png" alt="Clean Slater NY" className="h-32" />
+            <img src="/assets/clean-slater-logo.png" alt="Clean Slater NY" className="h-16 sm:h-24 lg:h-32" />
           </div>
         </div>
       </div>
 
       {/* Main Content - Centered Single Column */}
-      <div className="max-w-3xl mx-auto px-8 py-12 relative z-10">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12 relative z-10">
         
         {/* Progress Bar */}
         <ProgressBar 
           currentStep={currentStep} 
           totalSteps={totalSteps} 
-          className="mb-12"
+          className="mb-6 sm:mb-8 lg:mb-12"
         />
 
         {/* Main Card */}
@@ -410,7 +410,7 @@ export default function Questionnaire() {
             boxShadow: '0 2px 10px rgba(0, 0, 0, 0.04)'
           }}
         >
-          <CardContent className="p-12">
+          <CardContent className="p-4 sm:p-6 lg:p-12">
             <QuestionnaireStep
               step={currentStep}
               data={questionnaireData}
@@ -418,13 +418,13 @@ export default function Questionnaire() {
             />
 
             {/* Navigation Buttons */}
-            <div className="flex justify-between items-center mt-12 pt-8 border-t border-[#E5E7EB]">
+            <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center mt-6 sm:mt-8 lg:mt-12 pt-6 sm:pt-8 border-t border-[#E5E7EB] gap-4 sm:gap-0">
               {/* Left side - Save & Exit */}
               <Button
                 onClick={handleSaveAndExit}
                 disabled={saveQuestionnaireMutation.isPending}
                 variant="secondary"
-                className="bg-transparent border border-[#E5E7EB] text-[#6B7280] hover:bg-[#F9FAFB] hover:text-[#111827]"
+                className="bg-transparent border border-[#E5E7EB] text-[#6B7280] hover:bg-[#F9FAFB] hover:text-[#111827] w-full sm:w-auto order-2 sm:order-1"
                 style={{ 
                   borderRadius: '0.5rem',
                   padding: '0.75rem 1.5rem'
@@ -435,13 +435,13 @@ export default function Questionnaire() {
               </Button>
               
               {/* Right side - Previous & Continue */}
-              <div className="flex gap-3">
+              <div className="flex gap-3 w-full sm:w-auto order-1 sm:order-2">
                 <Button
                   onClick={handlePrevious}
                   disabled={currentStep === 1}
                   variant="secondary"
                   className={`
-                    bg-transparent border border-[#E5E7EB] text-[#4F46E5] hover:bg-[#F9FAFB]
+                    bg-transparent border border-[#E5E7EB] text-blue-600 hover:bg-blue-50 flex-1 sm:flex-none
                     ${currentStep === 1 ? 'invisible' : ''}
                   `}
                   style={{ 
@@ -456,13 +456,13 @@ export default function Questionnaire() {
                 <Button
                   onClick={handleNext}
                   disabled={saveQuestionnaireMutation.isPending || completeAssessmentMutation.isPending}
-                  className="bg-[#E6D5B8] hover:bg-[#D4C2A0] text-[#5D4E37] border-0 font-medium"
+                  className="bg-[#E6D5B8] hover:bg-[#D4C2A0] text-[#5D4E37] border-0 font-medium flex-1 sm:flex-none"
                   style={{ 
                     borderRadius: '0.5rem',
                     padding: '0.75rem 1.5rem'
                   }}
                 >
-                  {currentStep === totalSteps ? "Complete Assessment" : "Continue"}
+                  {currentStep === totalSteps ? "Complete" : "Continue"}
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
               </div>
