@@ -13,8 +13,8 @@
     "npm_config_audit": "false"
   },
   "functions": {
-    "api/index.js": {
-      "runtime": "nodejs18.x"
+    "api/*.js": {
+      "runtime": "nodejs20.x"
     }
   },
   "rewrites": [
