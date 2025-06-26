@@ -12,11 +12,6 @@
     "npm_config_fund": "false",
     "npm_config_audit": "false"
   },
-  "functions": {
-    "api/*.js": {
-      "runtime": "nodejs20.x"
-    }
-  },
   "rewrites": [
     {
       "source": "/api/(.*)",
