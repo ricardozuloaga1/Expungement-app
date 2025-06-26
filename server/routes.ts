@@ -236,9 +236,9 @@ function determineEligibility(responses: any) {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Use local auth for development, Replit auth for production
-  const isDevelopment = process.env.NODE_ENV === "development";
-  const authModule = isDevelopment 
+  // Use local auth for both development and production until OAuth is configured
+  const useLocalAuth = process.env.NODE_ENV === "development" || !process.env.REPL_ID;
+  const authModule = useLocalAuth 
     ? await import("./localAuth")
     : await import("./replitAuth");
   
