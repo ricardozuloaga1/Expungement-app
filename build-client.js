@@ -1,5 +1,5 @@
 import { build } from 'esbuild';
-import { copyFileSync, mkdirSync, existsSync, readdirSync, statSync } from 'fs';
+import { copyFileSync, mkdirSync, existsSync, readdirSync, statSync, readFileSync, writeFileSync } from 'fs';
 import path from 'path';
 
 function copyDirectory(src, dest) {
@@ -28,9 +28,6 @@ async function buildClient() {
       mkdirSync('dist/public', { recursive: true });
     }
 
-    // Copy HTML file
-    copyFileSync('client/index.html', 'dist/public/index.html');
-    
     // Copy assets directory if it exists
     if (existsSync('client/public/assets')) {
       copyDirectory('client/public/assets', 'dist/public/assets');
@@ -68,6 +65,20 @@ async function buildClient() {
       publicPath: '/',
       assetNames: 'assets/[name]-[hash][ext]',
     });
+
+    // Update HTML file to point to built assets
+    const htmlContent = readFileSync('client/index.html', 'utf8');
+    const updatedHtml = htmlContent
+      .replace(
+        '<script type="module" src="/src/main.tsx"></script>',
+        '<link rel="stylesheet" href="/main.css">\n    <script type="module" src="/main.js"></script>'
+      )
+      .replace(
+        '<script type="text/javascript" src="https://replit.com/public/js/replit-dev-banner.js"></script>',
+        ''
+      );
+    
+    writeFileSync('dist/public/index.html', updatedHtml);
 
     console.log('✅ Client build completed successfully');
   } catch (error) {
