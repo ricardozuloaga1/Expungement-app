@@ -1,13 +1,21 @@
 {
   "version": 2,
-  "buildCommand": "rm -rf node_modules package-lock.json && SKIP_ROLLUP_NATIVE=true npm install && SKIP_ROLLUP_NATIVE=true npm run build",
+  "buildCommand": "npm run build",
   "outputDirectory": "dist/public",
-  "installCommand": "npm install --no-optional",
+  "installCommand": "npm ci --no-optional --no-fund --no-audit || npm install --no-optional --no-fund --no-audit",
   "env": {
     "NODE_ENV": "production",
     "SKIP_INSTALL_SIMPLE_GIT_HOOKS": "true",
     "SKIP_ROLLUP_NATIVE": "true",
-    "ROLLUP_NO_WASM": "true"
+    "ROLLUP_NO_WASM": "true",
+    "npm_config_optional": "false",
+    "npm_config_fund": "false",
+    "npm_config_audit": "false"
+  },
+  "functions": {
+    "api/index.js": {
+      "runtime": "nodejs18.x"
+    }
   },
   "rewrites": [
     {
