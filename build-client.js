@@ -44,7 +44,7 @@ async function buildClient() {
       sourcemap: true,
       loader: {
         '.tsx': 'tsx',
-        '.ts': 'tsx',
+        '.ts': 'ts',
         '.jsx': 'jsx',
         '.js': 'jsx',
         '.css': 'css',
@@ -54,6 +54,8 @@ async function buildClient() {
         '.gif': 'file',
         '.svg': 'file',
       },
+      jsx: 'automatic',
+      jsxImportSource: 'react',
       define: {
         'process.env.NODE_ENV': '"production"',
         'import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY': JSON.stringify(process.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_51RYyBO04uCBKkJtweqRQH19acbABDnlarnrSoRBG9vUq05xd2M3SAtsQV1t19oxoyePD3ekkUvPu0K855IINub6200tjSykymw'),
