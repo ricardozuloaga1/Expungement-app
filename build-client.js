@@ -1,6 +1,10 @@
 import { build } from 'esbuild';
 import { copyFileSync, mkdirSync, existsSync, readdirSync, statSync, readFileSync, writeFileSync } from 'fs';
 import path from 'path';
+import { exec } from 'child_process';
+import { promisify } from 'util';
+
+const execAsync = promisify(exec);
 
 function copyDirectory(src, dest) {
   if (!existsSync(dest)) {
@@ -71,6 +75,10 @@ async function buildClient() {
       publicPath: '/',
       assetNames: 'assets/[name]-[hash][ext]',
     });
+
+    // Process CSS with PostCSS (Tailwind)
+    console.log('📦 Processing CSS with Tailwind...');
+    await execAsync('npx tailwindcss -i client/src/index.css -o dist/public/main.css --minify');
 
     // Update HTML file to point to built assets
     const htmlContent = readFileSync('client/index.html', 'utf8');
