@@ -7,7 +7,8 @@
     "NODE_ENV": "production",
     "SKIP_INSTALL_SIMPLE_GIT_HOOKS": "true",
     "npm_config_fund": "false",
-    "npm_config_audit": "false"
+    "npm_config_audit": "false",
+    "ROLLUP_BIND_WASM": "true"
   },
   "rewrites": [
     {
