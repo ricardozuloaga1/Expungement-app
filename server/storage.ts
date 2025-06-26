@@ -229,9 +229,9 @@ export const storage = {
     return result;
   },
 
-  async getQuestionnaireResponse(id: number): Promise<QuestionnaireResponse | null> {
+  async getQuestionnaireResponse(id: number): Promise<QuestionnaireResponse | undefined> {
     if (isDevelopment) {
-      return mockData.questionnaireResponses.get(id) || null;
+      return mockData.questionnaireResponses.get(id) || undefined;
     }
     
     const [response] = await database
@@ -239,7 +239,7 @@ export const storage = {
       .from(schema.questionnaireResponses)
       .where(eq(schema.questionnaireResponses.id, id))
       .limit(1);
-    return response || null;
+    return response || undefined;
   },
 
   async getUserQuestionnaireResponses(userId: string): Promise<QuestionnaireResponse[]> {
@@ -320,6 +320,7 @@ export const storage = {
         price: data.price || null,
         eligibilityType: data.eligibilityType || null,
         userComplexity: data.userComplexity || null,
+        stripeSessionId: data.stripeSessionId || null,
         expiresAt: data.expiresAt || null,
         createdAt: new Date(),
       };

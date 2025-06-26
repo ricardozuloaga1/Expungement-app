@@ -34,11 +34,11 @@ const ChoiceCard = React.forwardRef<HTMLButtonElement, ChoiceCardProps>(
           variant: isSelected ? "active" : "default", 
           className 
         }),
-        "rounded-[0.75rem] p-4 sm:p-6 text-[#111827]"
+        "rounded-[0.75rem] p-4 sm:p-6 text-[#111827] h-full min-h-[100px] flex flex-col justify-between"
       )}
       {...props}
     >
-      <div className="space-y-1">
+      <div className="space-y-1 text-center">
         <div className="font-medium text-sm sm:text-base leading-5 sm:leading-6">
           {title}
         </div>
