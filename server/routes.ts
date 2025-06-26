@@ -236,11 +236,8 @@ function determineEligibility(responses: any) {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Use local auth for both development and production until OAuth is configured
-  const useLocalAuth = process.env.NODE_ENV === "development" || !process.env.REPL_ID;
-  const authModule = useLocalAuth 
-    ? await import("./localAuth")
-    : await import("./replitAuth");
+  // Use simple JWT auth that works in serverless environment
+  const authModule = await import("./simpleAuth");
   
   const { setupAuth, isAuthenticated } = authModule;
 
