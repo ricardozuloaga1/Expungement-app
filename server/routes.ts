@@ -1,9 +1,10 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertQuestionnaireResponseSchema, insertEligibilityResultSchema } from "@shared/schema";
+import { insertQuestionnaireResponseSchema, insertEligibilityResultSchema, insertPremiumSubscriptionSchema } from "@shared/schema";
 import { z } from "zod";
 import OpenAI from 'openai';
+import { setupAdminRoutes } from "./adminRoutes";
 
 // Helper functions
 function getConvictionDate(month?: string, year?: string): Date | null {
@@ -236,13 +237,16 @@ function determineEligibility(responses: any) {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Use simple JWT auth that works in serverless environment
-  const authModule = await import("./simpleAuth");
+  // Use Supabase auth with JWT fallback for serverless environment
+  const authModule = await import("./supabaseAuth");
   
   const { setupAuth, isAuthenticated } = authModule;
 
   // Auth middleware
   await setupAuth(app);
+
+  // Setup admin routes (protected by auth)
+  setupAdminRoutes(app);
 
   // Auth routes
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
