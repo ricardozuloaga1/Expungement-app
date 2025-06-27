@@ -69,9 +69,19 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen homepage-background">
+    <div className="min-h-screen bg-[#E6D5B8] relative">
+      {/* NY Skyline Background */}
+      <img 
+        src="/assets/image1.png"
+        alt="New York Skyline"
+        className="fixed inset-0 w-full h-full object-cover object-bottom z-0 opacity-60"
+        style={{ pointerEvents: 'none' }}
+      />
+      {/* Light overlay for readability */}
+      <div className="fixed inset-0 w-full h-full z-10" style={{ background: 'rgba(255, 255, 255, 0.75)' }} />
+      
       {/* Navigation Header */}
-      <nav className="bg-white shadow-sm border-b border-gray-200 relative z-10">
+      <nav className="bg-white shadow-sm border-b border-gray-200 relative z-20">
         <div className="w-full px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16 sm:h-24 lg:h-32">
             <div className="flex items-center text-neutral-medium text-sm sm:text-base">
@@ -96,7 +106,7 @@ export default function Home() {
       </nav>
 
       {/* Main Content */}
-      <div className="mx-auto px-4 sm:px-6 lg:px-8 py-12 relative z-10">
+      <div className="mx-auto px-4 sm:px-6 lg:px-8 py-12 relative z-20">
         <div className="text-center mb-8 sm:mb-12">
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-neutral-dark mb-4 px-2">
             Welcome back, {(user as UserType)?.firstName || "there"}!
