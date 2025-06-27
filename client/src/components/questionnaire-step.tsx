@@ -143,7 +143,7 @@ export function QuestionnaireStep({ step, data, onUpdate }: QuestionnaireStepPro
                 What type of marijuana conviction(s) do you have? (Select all that apply)
                 {renderTooltip("Different offense types have different eligibility rules for expungement. You can select multiple if you have more than one type.", "offense-type")}
               </Label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="flex flex-col gap-4">
                 {[
                   { id: "possession", title: "Possession (personal use)", description: "Simple possession for personal consumption" },
                   { id: "possession_intent", title: "Possession with intent to distribute", description: "Possession with plans to sell or distribute" },

@@ -5,15 +5,16 @@ const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-in-producti
 
 // Simple JWT-based auth that works in serverless
 export async function setupAuth(app: Express) {
-  // Mock login endpoint
+  // Mock login endpoint - generates unique user
   app.get("/api/login", async (req, res) => {
     try {
-      // Create a mock user token
+      // Generate unique user ID and data
+      const userId = `user-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
       const mockUser = {
-        id: "prod-user-123",
-        email: "user@example.com",
-        firstName: "Test",
-        lastName: "User",
+        id: userId,
+        email: `user-${Date.now()}@cleanslater.com`,
+        firstName: null, // Will be set during onboarding
+        lastName: null,
         profileImageUrl: null,
       };
 
@@ -49,7 +50,7 @@ export async function setupAuth(app: Express) {
     res.redirect("/");
   });
 
-  // User endpoint
+  // User endpoint - ensures user exists in storage
   app.get("/api/auth/user", async (req, res) => {
     try {
       const token = req.cookies?.auth_token;
@@ -59,15 +60,17 @@ export async function setupAuth(app: Express) {
 
       const decoded = jwt.verify(token, JWT_SECRET) as any;
       
-      const user = {
+      // Import storage here to avoid circular dependency
+      const { storage } = await import("./storage");
+      
+      // Ensure user exists in storage
+      const user = await storage.upsertUser({
         id: decoded.sub,
         email: decoded.email,
         firstName: decoded.first_name,
         lastName: decoded.last_name,
         profileImageUrl: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
+      });
 
       res.json(user);
     } catch (error) {

@@ -109,7 +109,7 @@ export default function Home() {
       <div className="mx-auto px-4 sm:px-6 lg:px-8 py-12 relative z-20">
         <div className="text-center mb-8 sm:mb-12">
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-neutral-dark mb-4 px-2">
-            Welcome back, {(user as UserType)?.firstName || "there"}!
+            Welcome back{(user as UserType)?.firstName ? `, ${(user as UserType)?.firstName}` : ""}!
           </h1>
 
           <p className="text-base sm:text-lg text-neutral-medium max-w-3xl mx-auto mb-6 px-4">
