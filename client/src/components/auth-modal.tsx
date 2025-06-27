@@ -4,7 +4,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Lock } from "lucide-react";
+import { Lock, Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { queryClient } from "@/lib/queryClient";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -15,16 +17,91 @@ interface AuthModalProps {
 
 export function AuthModal({ isOpen, onClose, isLoginMode, onToggleMode }: AuthModalProps) {
   const [formData, setFormData] = useState({
-    name: "",
+    firstName: "",
+    lastName: "",
     email: "",
     password: "",
     agreeToTerms: false,
   });
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Redirect to Replit Auth login
-    window.location.href = "/api/login";
+    
+    if (!isLoginMode && !formData.agreeToTerms) {
+      toast({
+        title: "Terms Required",
+        description: "Please agree to the Terms of Service and Privacy Policy",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!formData.email || !formData.password) {
+      toast({
+        title: "Missing Information",
+        description: "Please enter both email and password",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!isLoginMode && (!formData.firstName || !formData.lastName)) {
+      toast({
+        title: "Missing Information", 
+        description: "Please enter your full name",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        // Invalidate auth queries to trigger re-fetch
+        await queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+        
+        toast({
+          title: isLoginMode ? "Welcome back!" : "Account created!",
+          description: data.newUser ? "Your account has been created successfully." : "You're now signed in.",
+        });
+        
+        onClose();
+        
+        // Small delay to allow auth state to update
+        setTimeout(() => {
+          window.location.reload();
+        }, 100);
+      } else {
+        throw new Error(data.message || "Authentication failed");
+      }
+    } catch (error) {
+      console.error("Auth error:", error);
+      toast({
+        title: "Authentication Error",
+        description: error instanceof Error ? error.message : "Please try again",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleInputChange = (field: string, value: string | boolean) => {
@@ -42,19 +119,36 @@ export function AuthModal({ isOpen, onClose, isLoginMode, onToggleMode }: AuthMo
         
         <form onSubmit={handleSubmit} className="space-y-6">
           {!isLoginMode && (
-            <div>
-              <Label htmlFor="name" className="text-sm font-medium text-neutral-dark">
-                Full Name
-              </Label>
-              <Input
-                id="name"
-                type="text"
-                placeholder="Enter your full name"
-                value={formData.name}
-                onChange={(e) => handleInputChange("name", e.target.value)}
-                className="mt-2"
-              />
-            </div>
+            <>
+              <div>
+                <Label htmlFor="firstName" className="text-sm font-medium text-neutral-dark">
+                  First Name
+                </Label>
+                <Input
+                  id="firstName"
+                  type="text"
+                  placeholder="Enter your first name"
+                  value={formData.firstName}
+                  onChange={(e) => handleInputChange("firstName", e.target.value)}
+                  className="mt-2"
+                  required={!isLoginMode}
+                />
+              </div>
+              <div>
+                <Label htmlFor="lastName" className="text-sm font-medium text-neutral-dark">
+                  Last Name
+                </Label>
+                <Input
+                  id="lastName"
+                  type="text"
+                  placeholder="Enter your last name"
+                  value={formData.lastName}
+                  onChange={(e) => handleInputChange("lastName", e.target.value)}
+                  className="mt-2"
+                  required={!isLoginMode}
+                />
+              </div>
+            </>
           )}
           
           <div>
@@ -68,6 +162,7 @@ export function AuthModal({ isOpen, onClose, isLoginMode, onToggleMode }: AuthMo
               value={formData.email}
               onChange={(e) => handleInputChange("email", e.target.value)}
               className="mt-2"
+              required
             />
           </div>
           
@@ -78,10 +173,12 @@ export function AuthModal({ isOpen, onClose, isLoginMode, onToggleMode }: AuthMo
             <Input
               id="password"
               type="password"
-              placeholder={isLoginMode ? "Enter your password" : "Create a secure password"}
+              placeholder={isLoginMode ? "Enter your password" : "Create a secure password (min 6 characters)"}
               value={formData.password}
               onChange={(e) => handleInputChange("password", e.target.value)}
               className="mt-2"
+              required
+              minLength={6}
             />
           </div>
           
@@ -91,6 +188,7 @@ export function AuthModal({ isOpen, onClose, isLoginMode, onToggleMode }: AuthMo
                 id="terms"
                 checked={formData.agreeToTerms}
                 onCheckedChange={(checked) => handleInputChange("agreeToTerms", checked as boolean)}
+                required={!isLoginMode}
               />
               <Label htmlFor="terms" className="text-sm text-neutral-medium leading-relaxed">
                 I agree to the{" "}
@@ -108,8 +206,16 @@ export function AuthModal({ isOpen, onClose, isLoginMode, onToggleMode }: AuthMo
           <Button 
             type="submit" 
             className="w-full bg-primary text-white py-3 font-semibold hover:bg-primary-dark"
+            disabled={isLoading}
           >
-            {isLoginMode ? "Sign In" : "Create Account & Start Assessment"}
+            {isLoading ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                {isLoginMode ? "Signing In..." : "Creating Account..."}
+              </>
+            ) : (
+              isLoginMode ? "Sign In" : "Create Account & Start Assessment"
+            )}
           </Button>
         </form>
         
@@ -120,6 +226,7 @@ export function AuthModal({ isOpen, onClose, isLoginMode, onToggleMode }: AuthMo
               variant="link"
               onClick={onToggleMode}
               className="text-primary hover:underline ml-1 p-0 h-auto"
+              disabled={isLoading}
             >
               {isLoginMode ? "Create Account" : "Sign In"}
             </Button>
