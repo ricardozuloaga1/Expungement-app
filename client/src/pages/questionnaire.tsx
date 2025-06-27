@@ -382,9 +382,19 @@ export default function Questionnaire() {
   }
 
   return (
-    <div className="min-h-screen homepage-background">
+    <div className="min-h-screen bg-[#E6D5B8] relative">
+      {/* NY Skyline Background */}
+      <img 
+        src="/assets/image1.png"
+        alt="New York Skyline"
+        className="fixed inset-0 w-full h-full object-cover object-bottom z-0 opacity-60"
+        style={{ pointerEvents: 'none' }}
+      />
+      {/* Light overlay for readability */}
+      <div className="fixed inset-0 w-full h-full z-10" style={{ background: 'rgba(255, 255, 255, 0.75)' }} />
+      
       {/* Header */}
-      <div className="bg-white border-b border-[#E5E7EB] relative z-10">
+      <div className="bg-white border-b border-[#E5E7EB] relative z-20">
         <div className="w-full px-4 sm:px-8 py-3 sm:py-4">
           <div className="flex items-center justify-center">
             <img src="/assets/clean-slater-logo.png" alt="Clean Slater NY" className="h-16 sm:h-24 lg:h-32" />
@@ -393,7 +403,7 @@ export default function Questionnaire() {
       </div>
 
       {/* Main Content - Centered Single Column */}
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12 relative z-10">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12 relative z-20">
         
         {/* Progress Bar */}
         <ProgressBar 

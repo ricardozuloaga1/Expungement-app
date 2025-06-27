@@ -111,6 +111,11 @@ export default function Landing() {
               className="object-contain opacity-80 w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 lg:w-52 lg:h-52"
             />
             <img 
+              src="/assets/badge 5.png" 
+              alt="One-Stop Expungement Solution - NY State Certified Legal Service" 
+              className="object-contain opacity-80 w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 lg:w-52 lg:h-52"
+            />
+            <img 
               src="/assets/one-stop-expungement-badge.png" 
               alt="One-Stop Expungement Solution" 
               className="object-contain opacity-80 w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 lg:w-52 lg:h-52"
