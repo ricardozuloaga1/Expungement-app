@@ -13,12 +13,20 @@ export default async function handler(req, res) {
     // Test database connection
     let dbStatus = 'not tested';
     try {
-      // Try importing the database module
+      // Try importing the database module and schema
       const { db } = await import('../dist/server/db.js');
+      const schema = await import('../dist/shared/schema.js');
       
-      // Simple query test
-      const result = await db.select().from(db.users).limit(1);
-      dbStatus = 'connected successfully';
+      // Test basic connection first
+      await db.execute('SELECT 1');
+      
+      // Then test with schema if available
+      if (schema.users) {
+        const result = await db.select().from(schema.users).limit(1);
+        dbStatus = 'connected successfully with schema';
+      } else {
+        dbStatus = 'connected but schema not available';
+      }
     } catch (error) {
       dbStatus = `connection failed: ${error.message}`;
     }

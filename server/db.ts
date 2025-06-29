@@ -17,9 +17,17 @@ const client = postgres(connectionString, {
   idle_timeout: 20,
   max_lifetime: 60 * 30, // 30 minutes
   ssl: process.env.NODE_ENV === 'production' ? 'require' : false,
+  prepare: false, // Disable prepared statements for Vercel
 });
 
-export const db = drizzle(client, { schema });
+// Initialize Drizzle with explicit schema
+export const db = drizzle(client, { 
+  schema: schema,
+  logger: process.env.NODE_ENV === 'development'
+});
 
 // For backward compatibility, export pool as well
 export const pool = client;
+
+// Export schema for direct access if needed
+export { schema };
