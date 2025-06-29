@@ -31,9 +31,10 @@ function Router() {
           <Route path="/results/:id" component={Results} />
           <Route path="/education" component={Education} />
           <Route path="/education/module/:id" component={ModulePage} />
-          <Route path="/premium" component={Premium} />
         </>
       )}
+      {/* Premium route accessible to both authenticated and unauthenticated users */}
+      <Route path="/premium" component={Premium} />
       <Route path="/learn-more" component={LearnMore} />
       <Route path="/design-test" component={DesignTest} />
       <Route component={NotFound} />

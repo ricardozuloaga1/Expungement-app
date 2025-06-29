@@ -21,10 +21,45 @@ export function AuthModal({ isOpen, onClose, isLoginMode, onToggleMode }: AuthMo
     agreeToTerms: false,
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Redirect to Replit Auth login
-    window.location.href = "/api/login";
+    
+    // If no email provided, use default login
+    if (!formData.email.trim()) {
+      window.location.href = "/api/login";
+      return;
+    }
+
+    try {
+      // Submit email to POST login endpoint
+      const response = await fetch("/api/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ 
+          email: formData.email,
+          name: formData.name.trim() 
+        }),
+      });
+
+      if (response.ok) {
+        // Close modal and reload page to show authenticated state
+        onClose();
+        window.location.reload();
+      } else {
+        // Fallback to GET login with email and name parameters
+        const encodedEmail = encodeURIComponent(formData.email);
+        const encodedName = encodeURIComponent(formData.name.trim());
+        window.location.href = `/api/login?email=${encodedEmail}&name=${encodedName}`;
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      // Fallback to GET login with email and name parameters
+      const encodedEmail = encodeURIComponent(formData.email);
+      const encodedName = encodeURIComponent(formData.name.trim());
+      window.location.href = `/api/login?email=${encodedEmail}&name=${encodedName}`;
+    }
   };
 
   const handleInputChange = (field: string, value: string | boolean) => {
@@ -49,10 +84,11 @@ export function AuthModal({ isOpen, onClose, isLoginMode, onToggleMode }: AuthMo
               <Input
                 id="name"
                 type="text"
-                placeholder="Enter your full name"
+                placeholder="Enter your full name (e.g., Ricardo)"
                 value={formData.name}
                 onChange={(e) => handleInputChange("name", e.target.value)}
                 className="mt-2"
+                required
               />
             </div>
           )}
@@ -82,7 +118,13 @@ export function AuthModal({ isOpen, onClose, isLoginMode, onToggleMode }: AuthMo
               value={formData.password}
               onChange={(e) => handleInputChange("password", e.target.value)}
               className="mt-2"
+              required
             />
+            {!isLoginMode && (
+              <p className="text-xs text-neutral-medium mt-2">
+                Password must be at least 8 characters with uppercase, lowercase, numbers, and symbols (!@#$%^&*)
+              </p>
+            )}
           </div>
           
           {!isLoginMode && (

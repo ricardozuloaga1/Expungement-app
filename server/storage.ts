@@ -14,12 +14,12 @@ import {
   type PremiumSubscription,
   type InsertUserProgress,
   type UserProgress,
-} from "@shared/schema";
-import { db } from "./db";
+} from "../shared/schema";
+import { db as supabaseDb } from "./db";
 import { eq, desc, and } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
-import * as schema from "@shared/schema";
+import * as schema from "../shared/schema";
 
 // Interface for storage operations
 export interface IStorage {
@@ -64,9 +64,8 @@ const mockData = {
 let database: any = null;
 
 if (!isDevelopment) {
-  const connectionString = process.env.DATABASE_URL!;
-  const client = postgres(connectionString);
-  database = drizzle(client, { schema });
+  // Use the same database connection from db.ts
+  database = supabaseDb;
 }
 
 export const storage = {
