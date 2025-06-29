@@ -5,19 +5,41 @@ async function getApp() {
   if (!appInstance) {
     try {
       // Import the built server module
-      const serverModule = await import('../dist/index.js');
+      const serverModule = await import('../dist/server/index.js');
+      
+      // The built server exports an initialized Express app
       appInstance = serverModule.default;
       
-      // Ensure the app is properly initialized
-      if (typeof appInstance === 'function') {
-        // App is likely the Express function, ready to use
-        console.log('✅ Express app loaded successfully for Vercel');
-      } else {
-        throw new Error('Invalid app export structure');
-      }
+      console.log('✅ Express app loaded successfully for Vercel');
     } catch (error) {
       console.error('❌ Failed to load Express app:', error);
-      throw error;
+      
+      // Debug: Check what files are available
+      try {
+        const fs = await import('fs');
+        console.log('📁 Current working directory:', process.cwd());
+        console.log('📁 Available files in current dir:', fs.readdirSync('.'));
+        
+        if (fs.existsSync('dist')) {
+          console.log('📁 Files in dist:', fs.readdirSync('dist'));
+          console.log('📁 Files in dist/server:', fs.readdirSync('dist/server'));
+        } else {
+          console.log('❌ dist directory does not exist');
+        }
+        
+        if (fs.existsSync('../dist')) {
+          console.log('📁 Files in ../dist:', fs.readdirSync('../dist'));
+          if (fs.existsSync('../dist/server')) {
+            console.log('📁 Files in ../dist/server:', fs.readdirSync('../dist/server'));
+          }
+        } else {
+          console.log('❌ ../dist directory does not exist');
+        }
+      } catch (debugError) {
+        console.log('Debug failed:', debugError.message);
+      }
+      
+      throw error;    
     }
   }
   return appInstance;
