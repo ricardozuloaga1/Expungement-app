@@ -1,6 +1,6 @@
 import { Pool, neonConfig } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-serverless';
-import * as schema from "@shared/schema";
+import * as schema from "../shared/schema";
 
 // Only set WebSocket constructor if we're not on Vercel
 if (!process.env.VERCEL) {

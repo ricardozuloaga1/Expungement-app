@@ -5,15 +5,31 @@ const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-in-producti
 
 // Simple JWT-based auth that works in serverless
 export async function setupAuth(app: Express) {
-  // Mock login endpoint - generates unique user
+  // Login endpoint - accepts email and name parameters or uses defaults
   app.get("/api/login", async (req, res) => {
     try {
-      // Generate unique user ID and data
+      // Get email and name from query parameters or use defaults
+      const email = req.query.email as string || "user@cleanslater.com";
+      const fullName = req.query.name as string || "";
+      
+      // Generate unique user ID
       const userId = `user-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      
+      // Parse the full name to get first name
+      let firstName = "";
+      if (fullName.trim()) {
+        firstName = fullName.trim().split(' ')[0]; // Take first word as first name
+      } else {
+        // Fallback: Extract first name from email (part before @)
+        const emailParts = email.split('@');
+        const emailPrefix = emailParts[0];
+        firstName = emailPrefix.charAt(0).toUpperCase() + emailPrefix.slice(1);
+      }
+      
       const mockUser = {
         id: userId,
-        email: `user-${Date.now()}@cleanslater.com`,
-        firstName: null, // Will be set during onboarding
+        email: email,
+        firstName: firstName,
         lastName: null,
         profileImageUrl: null,
       };
@@ -39,6 +55,62 @@ export async function setupAuth(app: Express) {
       });
 
       res.redirect("/");
+    } catch (error) {
+      console.error("Login error:", error);
+      res.status(500).json({ message: "Login failed" });
+    }
+  });
+
+  // POST login endpoint for form submissions
+  app.post("/api/login", async (req, res) => {
+    try {
+      const { email, name } = req.body;
+      const userEmail = email || "user@cleanslater.com";
+      const fullName = name || "";
+      
+      // Generate unique user ID
+      const userId = `user-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      
+      // Parse the full name to get first name
+      let firstName = "";
+      if (fullName.trim()) {
+        firstName = fullName.trim().split(' ')[0]; // Take first word as first name
+      } else {
+        // Fallback: Extract first name from email (part before @)
+        const emailParts = userEmail.split('@');
+        const emailPrefix = emailParts[0];
+        firstName = emailPrefix.charAt(0).toUpperCase() + emailPrefix.slice(1);
+      }
+      
+      const mockUser = {
+        id: userId,
+        email: userEmail,
+        firstName: firstName,
+        lastName: null,
+        profileImageUrl: null,
+      };
+
+      // Create JWT token
+      const token = jwt.sign(
+        {
+          sub: mockUser.id,
+          email: mockUser.email,
+          first_name: mockUser.firstName,
+          last_name: mockUser.lastName,
+          exp: Math.floor(Date.now() / 1000) + (7 * 24 * 60 * 60), // 1 week
+        },
+        JWT_SECRET
+      );
+
+      // Set cookie and return success
+      res.cookie('auth_token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 1 week
+        sameSite: 'lax'
+      });
+
+      res.json({ success: true, user: mockUser });
     } catch (error) {
       console.error("Login error:", error);
       res.status(500).json({ message: "Login failed" });

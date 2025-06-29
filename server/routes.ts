@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertQuestionnaireResponseSchema, insertEligibilityResultSchema } from "@shared/schema";
+import { insertQuestionnaireResponseSchema, insertEligibilityResultSchema } from "../shared/schema";
 import { z } from "zod";
 import OpenAI from 'openai';
 
@@ -236,10 +236,27 @@ function determineEligibility(responses: any) {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Use simple JWT auth that works in serverless environment
-  const authModule = await import("./simpleAuth");
+  // Use Supabase auth if available, otherwise fall back to simple auth
+  let authModule: any;
   
-  const { setupAuth, isAuthenticated } = authModule;
+  if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    console.log("Using Supabase auth");
+    authModule = await import("./supabaseAuth");
+  } else {
+    console.log("Using simple auth");
+    authModule = await import("./simpleAuth");
+  }
+  
+  const { setupAuth } = authModule;
+  const isAuthenticated = authModule.isAuthenticated || ((req: any, res: any, next: any) => {
+    // Simple middleware for Supabase auth - check for user ID in cookie
+    const userId = req.cookies?.supabase_user_id;
+    if (!userId) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+    req.user = { claims: { sub: userId } };
+    next();
+  });
 
   // Auth middleware
   await setupAuth(app);

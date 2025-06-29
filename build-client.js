@@ -63,6 +63,8 @@ async function buildClient() {
       define: {
         'process.env.NODE_ENV': '"production"',
         'import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY': JSON.stringify(process.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_51RYyBO04uCBKkJtweqRQH19acbABDnlarnrSoRBG9vUq05xd2M3SAtsQV1t19oxoyePD3ekkUvPu0K855IINub6200tjSykymw'),
+        'import.meta.env.VITE_SUPABASE_URL': JSON.stringify(process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || 'https://xssividnqebolxurgzpj.supabase.co'),
+        'import.meta.env.VITE_SUPABASE_ANON_KEY': JSON.stringify(process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhzc2l2aWRucWVib2x4dXJnenBqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEwNTQ4NzcsImV4cCI6MjA2NjYzMDg3N30.NiVyqoBXQc7FbxkhmJqDNTA0NAXHYoDczzLs1cKsCbM'),
         'import.meta.env.MODE': '"production"',
         'import.meta.env.DEV': 'false',
         'import.meta.env.PROD': 'true',
