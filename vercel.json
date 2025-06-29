@@ -3,6 +3,11 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist/public",
   "installCommand": "npm ci --include=optional --no-fund --no-audit",
+  "functions": {
+    "api/*.js": {
+      "includeFiles": "dist/**"
+    }
+  },
   "env": {
     "NODE_ENV": "production",
     "SKIP_INSTALL_SIMPLE_GIT_HOOKS": "true",
