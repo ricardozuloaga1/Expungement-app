@@ -16,8 +16,11 @@ const client = postgres(connectionString, {
   max: process.env.VERCEL ? 1 : 10, // Limit connections in serverless environment
   idle_timeout: 20,
   max_lifetime: 60 * 30, // 30 minutes
-  ssl: process.env.NODE_ENV === 'production' ? 'require' : false,
+  ssl: process.env.VERCEL ? { rejectUnauthorized: false } : 'require',
   prepare: false, // Disable prepared statements for Vercel
+  transform: {
+    undefined: null,
+  },
 });
 
 // Initialize Drizzle with explicit schema
