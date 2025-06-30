@@ -17,6 +17,9 @@ export default async function handler(req, res) {
     // Get user ID from cookie
     const userId = req.cookies?.supabase_user_id;
     
+    console.log('Request cookies:', Object.keys(req.cookies || {}));
+    console.log('User ID from cookie:', userId);
+    
     if (!userId) {
       return res.status(401).json({ error: "Not authenticated" });
     }
@@ -38,7 +41,13 @@ export default async function handler(req, res) {
 
       if (error) {
         console.error('Database error:', error);
-        return res.status(500).json({ error: 'Failed to create questionnaire response' });
+        console.error('Failed data:', JSON.stringify(questionnaireData, null, 2));
+        return res.status(500).json({ 
+          error: 'Failed to create questionnaire response', 
+          details: error.message,
+          code: error.code,
+          hint: error.hint 
+        });
       }
 
       return res.json(data);
