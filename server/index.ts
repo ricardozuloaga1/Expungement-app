@@ -78,5 +78,8 @@ if (!process.env.VERCEL) {
   })();
 }
 
-// For Vercel deployment
-export default app;
+// For Vercel deployment - need to export the initialized app
+export default async function handler(req: Request, res: Response) {
+  const { app: initializedApp } = await initPromise;
+  return initializedApp(req, res);
+}
