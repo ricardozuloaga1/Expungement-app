@@ -1,5 +1,5 @@
 // Single Vercel API handler for all Express routes
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   try {
     // Add CORS headers
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -12,14 +12,16 @@ export default async function handler(req, res) {
       return res.status(200).end();
     }
 
-    // Import the Express app handler
-    const { default: appHandler } = await import('../dist/server/index.js');
+    // Import the Express app handler using CommonJS require
+    const appHandler = require('../dist/server/index.js').default || require('../dist/server/index.js');
     
     // Ensure the handler is properly called
     if (typeof appHandler === 'function') {
       return await appHandler(req, res);
     } else {
-      throw new Error('App handler is not a function');
+      console.error('App handler type:', typeof appHandler);
+      console.error('App handler keys:', Object.keys(appHandler || {}));
+      throw new Error(`App handler is not a function. Type: ${typeof appHandler}`);
     }
     
   } catch (error) {
@@ -33,4 +35,4 @@ export default async function handler(req, res) {
       timestamp: new Date().toISOString()
     });
   }
-} 
+}; 
