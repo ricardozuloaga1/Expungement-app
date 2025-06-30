@@ -25,7 +25,7 @@ const client = postgres(connectionString, {
   max: process.env.VERCEL ? 1 : 10, // Limit connections in serverless environment
   idle_timeout: 20,
   max_lifetime: 60 * 30, // 30 minutes
-  ssl: process.env.VERCEL ? { rejectUnauthorized: false } : false,
+  ssl: false, // Disable SSL completely for testing
   prepare: false, // Disable prepared statements for Vercel
   transform: {
     undefined: null,
