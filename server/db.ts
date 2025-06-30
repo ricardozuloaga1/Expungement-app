@@ -13,6 +13,14 @@ let connectionString = process.env.DATABASE_URL;
 
 // For Vercel, ensure proper SSL and connection parameters
 if (process.env.VERCEL && connectionString) {
+  // Switch from pooler to direct connection for Vercel compatibility
+  if (connectionString.includes('pooler.supabase.com:6543')) {
+    connectionString = connectionString.replace(
+      '.pooler.supabase.com:6543',
+      '.supabase.co:5432'
+    );
+  }
+  
   // Add SSL parameters if not already present
   if (!connectionString.includes('sslmode=')) {
     const separator = connectionString.includes('?') ? '&' : '?';
