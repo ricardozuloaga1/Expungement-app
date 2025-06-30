@@ -20,8 +20,36 @@
       "destination": "/api/debug"
     },
     {
-      "source": "/api/(.*)",
-      "destination": "/api/index"
+      "source": "/api/login",
+      "destination": "/api/login"
+    },
+    {
+      "source": "/api/test-auth",
+      "destination": "/api/test-auth"
+    },
+    {
+      "source": "/api/errors",
+      "destination": "/api/errors"
+    },
+    {
+      "source": "/api/questionnaire/user",
+      "destination": "/api/questionnaire/user"
+    },
+    {
+      "source": "/api/questionnaire/([^/]+)",
+      "destination": "/api/questionnaire/$1"
+    },
+    {
+      "source": "/api/questionnaire",
+      "destination": "/api/questionnaire"
+    },
+    {
+      "source": "/api/eligibility/user",
+      "destination": "/api/eligibility/user"
+    },
+    {
+      "source": "/api/eligibility",
+      "destination": "/api/eligibility"
     },
     {
       "source": "/(.*)",
