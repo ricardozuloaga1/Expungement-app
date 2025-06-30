@@ -146,8 +146,9 @@ export function PremiumModal({ isOpen, onClose, onContinueBasic, eligibilityType
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-4xl max-h-[95vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-4xl max-h-[95vh] overflow-y-auto" aria-describedby="premium-description">
         <DialogHeader>
+          <div id="premium-description" className="sr-only">Premium subscription options and features</div>
           <div>
             <DialogTitle className="text-xl sm:text-2xl lg:text-3xl font-bold text-neutral-dark mb-1 sm:mb-2">
               Premium Legal Assistance

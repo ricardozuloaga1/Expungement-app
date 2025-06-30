@@ -237,8 +237,9 @@ export const ChatWidget: React.FC = () => {
 
       {/* Contact Form Modal */}
       <Dialog open={showContactForm} onOpenChange={setShowContactForm}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md" aria-describedby="chat-description">
           <DialogHeader>
+            <div id="chat-description" className="sr-only">Contact form for legal assistance</div>
             <DialogTitle className="flex items-center">
               <Mail className="w-5 h-5 mr-2 text-primary" />
               Contact Our Legal Team
