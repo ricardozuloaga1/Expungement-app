@@ -33,7 +33,28 @@ export default async function handler(req, res) {
       if (error) {
         throw new Error(`Supabase client error: ${error.message}`);
       }
-      dbStatus = 'connected successfully with Supabase client';
+      
+      // Check if our required tables exist
+      const tableChecks = {};
+      
+      // Check questionnaire_responses table
+      const { data: qData, error: qError } = await supabase
+        .from('questionnaire_responses')
+        .select('count')
+        .limit(1);
+      tableChecks.questionnaire_responses = qError ? `ERROR: ${qError.message}` : 'EXISTS';
+      
+      // Check eligibility_results table  
+      const { data: eData, error: eError } = await supabase
+        .from('eligibility_results')
+        .select('count')
+        .limit(1);
+      tableChecks.eligibility_results = eError ? `ERROR: ${eError.message}` : 'EXISTS';
+      
+      dbStatus = {
+        connection: 'connected successfully with Supabase client',
+        tables: tableChecks
+      };
       
     } catch (supabaseError) {
       // Fallback to raw Drizzle connection
