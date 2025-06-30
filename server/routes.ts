@@ -239,12 +239,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Use Supabase auth if available, otherwise fall back to simple auth
   let authModule: any;
   
-  if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
-    console.log("Using Supabase auth");
-    authModule = await import("./supabaseAuth");
-  } else {
-    console.log("Using simple auth");
+  // Add timeout and error handling for auth system selection
+  try {
+    if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      console.log("Attempting to use Supabase auth...");
+      
+      // Add timeout for Supabase connection test
+      const supabaseTest = Promise.race([
+        import("./supabaseAuth").then(async (module) => {
+          // Try to validate Supabase connection
+          console.log("Supabase auth module loaded successfully");
+          return module;
+        }),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Supabase connection timeout')), 5000)
+        )
+      ]);
+      
+      authModule = await supabaseTest;
+      console.log("✅ Using Supabase auth");
+    } else {
+      throw new Error("Supabase environment variables not set");
+    }
+  } catch (error) {
+    console.warn("⚠️ Supabase auth failed, falling back to simple auth:", error);
     authModule = await import("./simpleAuth");
+    console.log("✅ Using simple auth fallback");
   }
   
   const { setupAuth } = authModule;
@@ -258,8 +278,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     next();
   });
 
-  // Auth middleware
-  await setupAuth(app);
+  // Auth middleware with error handling
+  try {
+    await setupAuth(app);
+    console.log("✅ Authentication system initialized successfully");
+  } catch (error) {
+    console.error("❌ Auth setup failed:", error);
+    // Fallback to simple auth if setup fails
+    const simpleAuthModule = await import("./simpleAuth");
+    await simpleAuthModule.setupAuth(app);
+    console.log("✅ Fallback to simple auth completed");
+  }
 
   // Auth routes
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
