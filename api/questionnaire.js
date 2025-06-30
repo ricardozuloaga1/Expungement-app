@@ -1,5 +1,6 @@
 // Direct questionnaire endpoint for Vercel
 import { createClient } from '@supabase/supabase-js';
+import { logError } from './errors.js';
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -42,6 +43,7 @@ export default async function handler(req, res) {
       if (error) {
         console.error('Database error:', error);
         console.error('Failed data:', JSON.stringify(questionnaireData, null, 2));
+        logError('questionnaire-create', error, questionnaireData);
         return res.status(500).json({ 
           error: 'Failed to create questionnaire response', 
           details: error.message,
