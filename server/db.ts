@@ -18,6 +18,12 @@ if (process.env.VERCEL && connectionString) {
     const separator = connectionString.includes('?') ? '&' : '?';
     connectionString += `${separator}sslmode=require&connect_timeout=15`;
   }
+} else if (process.env.NODE_ENV === 'production' && connectionString) {
+  // Ensure SSL for any production environment (not just Vercel)
+  if (!connectionString.includes('sslmode=')) {
+    const separator = connectionString.includes('?') ? '&' : '?';
+    connectionString += `${separator}sslmode=require`;
+  }
 }
 
 // Create postgres client with proper configuration for Supabase
@@ -25,7 +31,7 @@ const client = postgres(connectionString, {
   max: process.env.VERCEL ? 1 : 10, // Limit connections in serverless environment
   idle_timeout: 20,
   max_lifetime: 60 * 30, // 30 minutes
-  ssl: false, // Disable SSL completely for testing
+  ssl: process.env.NODE_ENV === 'production' ? 'require' : false, // Enable SSL for production (Supabase requires it)
   prepare: false, // Disable prepared statements for Vercel
   transform: {
     undefined: null,
