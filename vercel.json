@@ -4,7 +4,7 @@
   "outputDirectory": "dist/public",
   "installCommand": "npm ci --include=optional --no-fund --no-audit",
   "functions": {
-    "api/*.js": {
+    "api/index.js": {
       "includeFiles": "dist/**"
     }
   },
@@ -16,48 +16,8 @@
   },
   "rewrites": [
     {
-      "source": "/api/debug",
-      "destination": "/api/debug"
-    },
-    {
-      "source": "/api/login",
-      "destination": "/api/login"
-    },
-    {
-      "source": "/api/test-auth",
-      "destination": "/api/test-auth"
-    },
-    {
-      "source": "/api/errors",
-      "destination": "/api/errors"
-    },
-    {
-      "source": "/api/inspect-table",
-      "destination": "/api/inspect-table"
-    },
-    {
-      "source": "/api/migrate",
-      "destination": "/api/migrate"
-    },
-    {
-      "source": "/api/questionnaire/user",
-      "destination": "/api/questionnaire/user"
-    },
-    {
-      "source": "/api/questionnaire/([^/]+)",
-      "destination": "/api/questionnaire/$1"
-    },
-    {
-      "source": "/api/questionnaire",
-      "destination": "/api/questionnaire"
-    },
-    {
-      "source": "/api/eligibility/user",
-      "destination": "/api/eligibility/user"
-    },
-    {
-      "source": "/api/eligibility",
-      "destination": "/api/eligibility"
+      "source": "/api/(.*)",
+      "destination": "/api"
     },
     {
       "source": "/(.*)",
