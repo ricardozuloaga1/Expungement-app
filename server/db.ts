@@ -9,14 +9,23 @@ if (!process.env.DATABASE_URL) {
 }
 
 // Configure postgres connection for Supabase
-const connectionString = process.env.DATABASE_URL;
+let connectionString = process.env.DATABASE_URL;
+
+// For Vercel, ensure proper SSL and connection parameters
+if (process.env.VERCEL && connectionString) {
+  // Add SSL parameters if not already present
+  if (!connectionString.includes('sslmode=')) {
+    const separator = connectionString.includes('?') ? '&' : '?';
+    connectionString += `${separator}sslmode=require&connect_timeout=15`;
+  }
+}
 
 // Create postgres client with proper configuration for Supabase
 const client = postgres(connectionString, {
   max: process.env.VERCEL ? 1 : 10, // Limit connections in serverless environment
   idle_timeout: 20,
   max_lifetime: 60 * 30, // 30 minutes
-  ssl: process.env.VERCEL ? { rejectUnauthorized: false } : 'require',
+  ssl: process.env.VERCEL ? 'require' : 'require',
   prepare: false, // Disable prepared statements for Vercel
   transform: {
     undefined: null,
