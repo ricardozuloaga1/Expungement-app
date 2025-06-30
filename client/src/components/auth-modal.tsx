@@ -20,9 +20,13 @@ export function AuthModal({ isOpen, onClose, isLoginMode, onToggleMode }: AuthMo
     password: "",
     agreeToTerms: false,
   });
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
+    setIsLoading(true);
     
     // If no email provided, use default login
     if (!formData.email.trim()) {
@@ -48,17 +52,29 @@ export function AuthModal({ isOpen, onClose, isLoginMode, onToggleMode }: AuthMo
         onClose();
         window.location.reload();
       } else {
-        // Fallback to GET login with email and name parameters
-        const encodedEmail = encodeURIComponent(formData.email);
-        const encodedName = encodeURIComponent(formData.name.trim());
-        window.location.href = `/api/login?email=${encodedEmail}&name=${encodedName}`;
+        // Try to get error message from response
+        try {
+          const errorData = await response.json();
+          if (errorData.error === "Account already exists") {
+            setError("An account with this email already exists. Please use the 'Sign In' option instead.");
+            setIsLoading(false);
+            return;
+          } else {
+            setError(errorData.message || "Login failed. Please try again.");
+            setIsLoading(false);
+            return;
+          }
+        } catch {
+          // If we can't parse the error, fallback to GET login
+          const encodedEmail = encodeURIComponent(formData.email);
+          const encodedName = encodeURIComponent(formData.name.trim());
+          window.location.href = `/api/login?email=${encodedEmail}&name=${encodedName}`;
+        }
       }
     } catch (error) {
       console.error("Login error:", error);
-      // Fallback to GET login with email and name parameters
-      const encodedEmail = encodeURIComponent(formData.email);
-      const encodedName = encodeURIComponent(formData.name.trim());
-      window.location.href = `/api/login?email=${encodedEmail}&name=${encodedName}`;
+      setError("Network error. Please check your connection and try again.");
+      setIsLoading(false);
     }
   };
 
@@ -74,6 +90,12 @@ export function AuthModal({ isOpen, onClose, isLoginMode, onToggleMode }: AuthMo
               {isLoginMode ? "Welcome Back" : "Create Your Account"}
             </DialogTitle>
         </DialogHeader>
+        
+        {error && (
+          <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-sm text-red-700">{error}</p>
+          </div>
+        )}
         
         <form onSubmit={handleSubmit} className="space-y-6">
           {!isLoginMode && (
@@ -149,9 +171,10 @@ export function AuthModal({ isOpen, onClose, isLoginMode, onToggleMode }: AuthMo
           
           <Button 
             type="submit" 
-            className="w-full bg-primary text-white py-3 font-semibold hover:bg-primary-dark"
+            disabled={isLoading}
+            className="w-full bg-primary text-white py-3 font-semibold hover:bg-primary-dark disabled:opacity-50"
           >
-            {isLoginMode ? "Sign In" : "Create Account & Start Assessment"}
+            {isLoading ? "Processing..." : (isLoginMode ? "Sign In" : "Create Account & Start Assessment")}
           </Button>
         </form>
         
