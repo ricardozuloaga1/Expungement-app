@@ -18,22 +18,32 @@ export default async function handler(req, res) {
       const rawUrl = process.env.DATABASE_URL || '';
       actualConnectionString = rawUrl.replace(/:([^:@]+)@/, ':***@'); // Hide password
       
-      // Try importing the database module and schema
-      const { db } = await import('../dist/server/db.js');
-      const schema = await import('../dist/shared/schema.js');
+      // Try Supabase client first (more reliable for serverless)
+      const { createClient } = await import('@supabase/supabase-js');
+      const supabase = createClient(
+        process.env.SUPABASE_URL,
+        process.env.SUPABASE_SERVICE_ROLE_KEY,
+        {
+          auth: { persistSession: false }
+        }
+      );
       
-      // Test basic connection first
-      await db.execute('SELECT 1');
-      
-      // Then test with schema if available
-      if (schema.users) {
-        const result = await db.select().from(schema.users).limit(1);
-        dbStatus = 'connected successfully with schema';
-      } else {
-        dbStatus = 'connected but schema not available';
+      // Test with Supabase client
+      const { data, error } = await supabase.from('users').select('*').limit(1);
+      if (error) {
+        throw new Error(`Supabase client error: ${error.message}`);
       }
-    } catch (error) {
-      dbStatus = `connection failed: ${error.message}`;
+      dbStatus = 'connected successfully with Supabase client';
+      
+    } catch (supabaseError) {
+      // Fallback to raw Drizzle connection
+      try {
+        const { db } = await import('../dist/server/db.js');
+        await db.execute('SELECT 1');
+        dbStatus = 'connected with Drizzle (Supabase client failed)';
+      } catch (drizzleError) {
+        dbStatus = `both connections failed - Supabase: ${supabaseError.message}, Drizzle: ${drizzleError.message}`;
+      }
     }
 
     res.status(200).json({
