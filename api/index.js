@@ -11,10 +11,10 @@ export default async function handler(req, res) {
     }
 
     // Import the app dynamically to handle any initialization issues
-    const { default: app } = await import('../dist/server/index.js');
+    const { default: appHandler } = await import('../dist/server/index.js');
     
-    // Call the app handler
-    return await app(req, res);
+    // Call the app handler (which should be a function that returns an Express app)
+    return await appHandler(req, res);
     
   } catch (error) {
     console.error('API handler error:', error);

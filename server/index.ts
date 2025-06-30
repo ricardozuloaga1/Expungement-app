@@ -88,7 +88,14 @@ export default async function handler(req: Request, res: Response) {
     }
     
     const { app } = await appPromise;
-    return app(req, res);
+    
+    // Use the Express app as middleware (it expects 3 parameters: req, res, next)
+    app.handle(req, res, (err: any) => {
+      if (err) {
+        console.error('Express error:', err);
+        res.status(500).json({ error: 'Request handling failed' });
+      }
+    });
   } catch (error) {
     console.error('Server handler error:', error);
     res.status(500).json({ error: 'Server initialization failed' });
