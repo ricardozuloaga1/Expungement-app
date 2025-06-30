@@ -239,6 +239,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Use Supabase auth if available, otherwise fall back to simple auth
   let authModule: any;
   
+  // Debug logging for environment
+  console.log("🔍 Environment debug:");
+  console.log("NODE_ENV:", process.env.NODE_ENV);
+  console.log("VERCEL:", process.env.VERCEL);
+  console.log("DATABASE_URL exists:", !!process.env.DATABASE_URL);
+  console.log("SUPABASE_URL exists:", !!process.env.SUPABASE_URL);
+  console.log("SUPABASE_SERVICE_ROLE_KEY exists:", !!process.env.SUPABASE_SERVICE_ROLE_KEY);
+  console.log("JWT_SECRET exists:", !!process.env.JWT_SECRET);
+  
   // Add timeout and error handling for auth system selection
   try {
     if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {

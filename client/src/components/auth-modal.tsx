@@ -84,12 +84,15 @@ export function AuthModal({ isOpen, onClose, isLoginMode, onToggleMode }: AuthMo
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md" aria-describedby="auth-description">
         <DialogHeader>
             <DialogTitle className="text-2xl font-bold text-neutral-dark">
               {isLoginMode ? "Welcome Back" : "Create Your Account"}
             </DialogTitle>
         </DialogHeader>
+        <div id="auth-description" className="sr-only">
+          {isLoginMode ? "Sign in to your account" : "Create a new account to start your assessment"}
+        </div>
         
         {error && (
           <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
