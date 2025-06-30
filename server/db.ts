@@ -13,14 +13,6 @@ let connectionString = process.env.DATABASE_URL;
 
 // For Vercel, ensure proper SSL and connection parameters
 if (process.env.VERCEL && connectionString) {
-  // Switch from pooler to direct connection for Vercel compatibility
-  if (connectionString.includes('pooler.supabase.com:6543')) {
-    connectionString = connectionString.replace(
-      '.pooler.supabase.com:6543',
-      '.supabase.co:5432'
-    );
-  }
-  
   // Add SSL parameters if not already present
   if (!connectionString.includes('sslmode=')) {
     const separator = connectionString.includes('?') ? '&' : '?';
@@ -33,7 +25,7 @@ const client = postgres(connectionString, {
   max: process.env.VERCEL ? 1 : 10, // Limit connections in serverless environment
   idle_timeout: 20,
   max_lifetime: 60 * 30, // 30 minutes
-  ssl: process.env.VERCEL ? 'require' : 'require',
+  ssl: process.env.VERCEL ? { rejectUnauthorized: false } : false,
   prepare: false, // Disable prepared statements for Vercel
   transform: {
     undefined: null,

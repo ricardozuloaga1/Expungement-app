@@ -12,7 +12,12 @@ export default async function handler(req, res) {
 
     // Test database connection
     let dbStatus = 'not tested';
+    let actualConnectionString = 'unknown';
     try {
+      // Log the actual DATABASE_URL being used (redacted for security)
+      const rawUrl = process.env.DATABASE_URL || '';
+      actualConnectionString = rawUrl.replace(/:([^:@]+)@/, ':***@'); // Hide password
+      
       // Try importing the database module and schema
       const { db } = await import('../dist/server/db.js');
       const schema = await import('../dist/shared/schema.js');
@@ -36,6 +41,7 @@ export default async function handler(req, res) {
       timestamp: new Date().toISOString(),
       environment: envCheck,
       database: dbStatus,
+      connectionString: actualConnectionString,
       request: {
         method: req.method,
         url: req.url,
