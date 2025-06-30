@@ -125,9 +125,10 @@ export function DocumentGenerator({ eligibilityStatus, questionnaireData, user }
       </div>
 
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Complete Document Information</DialogTitle>
+                  <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto" aria-describedby="document-generator-description">
+            <DialogHeader>
+              <div id="document-generator-description" className="sr-only">Complete your document information for legal template generation</div>
+              <DialogTitle>Complete Document Information</DialogTitle>
             <DialogDescription>
               Fill in the required information to generate your legal document. Review and edit as needed before downloading.
             </DialogDescription>
