@@ -35,30 +35,52 @@ export default async function handler(req, res) {
     const firstName = name ? name.split(' ')[0] : email.split('@')[0];
     const lastName = name ? name.split(' ').slice(1).join(' ') || null : null;
 
-    // Check if user exists
-    const { data: users } = await supabase.auth.admin.listUsers();
-    const existingUser = users?.users.find(user => user.email === email);
+    // Check if user exists in our users table first (more reliable)
+    const { data: existingDbUser, error: fetchError } = await supabase
+      .from('users')
+      .select('id, email')
+      .eq('email', email)
+      .single();
     
     let userId;
     
-    if (existingUser) {
-      userId = existingUser.id;
+    if (existingDbUser && !fetchError) {
+      // User exists, log them in
+      userId = existingDbUser.id;
+      console.log('Existing user found:', email, userId);
     } else {
-      // Create new user
-      const { data: newUser, error } = await supabase.auth.admin.createUser({
-        email,
-        email_confirm: true,
-        user_metadata: {
-          first_name: firstName,
-          last_name: lastName,
-        },
-      });
+      // Check auth users as backup
+      const { data: authUsers } = await supabase.auth.admin.listUsers();
+      const existingAuthUser = authUsers?.users.find(user => user.email === email);
       
-      if (error) {
-        throw error;
+      if (existingAuthUser) {
+        userId = existingAuthUser.id;
+        console.log('Existing auth user found:', email, userId);
+      } else {
+        // Create completely new user
+        const { data: newUser, error } = await supabase.auth.admin.createUser({
+          email,
+          email_confirm: true,
+          user_metadata: {
+            first_name: firstName,
+            last_name: lastName,
+          },
+        });
+        
+        if (error) {
+          // If user already exists error, try to get the existing user
+          if (error.message.includes('already exists') || error.message.includes('already registered')) {
+            return res.status(400).json({ 
+              error: "Account already exists", 
+              message: "An account with this email already exists. Please contact support if you need help accessing your account." 
+            });
+          }
+          throw error;
+        }
+        
+        userId = newUser.user.id;
+        console.log('New user created:', email, userId);
       }
-      
-      userId = newUser.user.id;
     }
 
     // Store user in database using direct Supabase client
