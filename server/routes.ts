@@ -272,8 +272,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   } catch (error) {
     console.warn("⚠️ Supabase auth failed, falling back to simple auth:", error);
-    authModule = await import("./simpleAuth");
-    console.log("✅ Using simple auth fallback");
+    try {
+      authModule = await import("./simpleAuth");
+      console.log("✅ Using simple auth fallback");
+    } catch (simpleAuthError) {
+      console.error("❌ Simple auth also failed, using emergency auth:", simpleAuthError);
+      authModule = await import("./emergency-auth");
+      authModule.setupAuth = authModule.setupEmergencyAuth;
+      authModule.isAuthenticated = authModule.emergencyAuthMiddleware;
+      console.log("🚨 Using EMERGENCY AUTH");
+    }
   }
   
   const { setupAuth } = authModule;
