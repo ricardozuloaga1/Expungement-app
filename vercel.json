@@ -32,6 +32,14 @@
       "destination": "/api/errors"
     },
     {
+      "source": "/api/inspect-table",
+      "destination": "/api/inspect-table"
+    },
+    {
+      "source": "/api/migrate",
+      "destination": "/api/migrate"
+    },
+    {
       "source": "/api/questionnaire/user",
       "destination": "/api/questionnaire/user"
     },
