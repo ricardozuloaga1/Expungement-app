@@ -228,9 +228,10 @@ export function AssessmentReportPreview({ eligibilityResult, questionnaireData, 
         </div>
 
         <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
-          <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Assessment Report Preview</DialogTitle>
+                      <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto" aria-describedby="report-preview-description">
+              <DialogHeader>
+                <div id="report-preview-description" className="sr-only">Preview your eligibility assessment report before downloading</div>
+                <DialogTitle>Assessment Report Preview</DialogTitle>
               <DialogDescription>
                 Review your eligibility assessment report before downloading
               </DialogDescription>
