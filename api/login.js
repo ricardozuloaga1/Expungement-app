@@ -14,8 +14,23 @@ const supabase = createClient(
 
 export default async function handler(req, res) {
   try {
-    const email = req.query.email || "user@cleanslater.com";
-    const name = req.query.name || "";
+    // Handle both POST (from form) and GET (fallback) requests
+    let email, name;
+    
+    if (req.method === 'POST') {
+      // Real user data from the signup/login form
+      email = req.body.email;
+      name = req.body.name || "";
+    } else {
+      // GET request fallback (for testing)
+      email = req.query.email || "demo@expungement-app.com";
+      name = req.query.name || "Demo User";
+    }
+    
+    // Validate email is provided
+    if (!email || !email.trim()) {
+      return res.status(400).json({ error: "Email is required" });
+    }
     
     const firstName = name ? name.split(' ')[0] : email.split('@')[0];
     const lastName = name ? name.split(' ').slice(1).join(' ') || null : null;
