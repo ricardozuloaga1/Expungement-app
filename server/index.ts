@@ -78,8 +78,19 @@ if (!process.env.VERCEL) {
   })();
 }
 
-// For Vercel deployment - export initialized app
+// For Vercel deployment
+let appPromise: Promise<any> | null = null;
+
 export default async function handler(req: Request, res: Response) {
-  const { app } = await initPromise;
-  return app(req, res);
+  try {
+    if (!appPromise) {
+      appPromise = initializeApp();
+    }
+    
+    const { app } = await appPromise;
+    return app(req, res);
+  } catch (error) {
+    console.error('Server handler error:', error);
+    res.status(500).json({ error: 'Server initialization failed' });
+  }
 }
