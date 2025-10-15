@@ -43,10 +43,11 @@ export default function Home() {
 
   const handleLogout = async () => {
     try {
-      await fetch("/api/auth/logout", {
-        method: "POST",
+      await fetch("/api/logout", {
+        method: "GET",
         credentials: "include"
       });
+      // The server will redirect, but we'll also force a client-side redirect
       window.location.href = "/";
     } catch (error) {
       console.error("Logout error:", error);

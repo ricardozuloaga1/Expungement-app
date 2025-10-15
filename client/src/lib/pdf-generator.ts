@@ -2,10 +2,9 @@ import { jsPDF } from 'jspdf';
 import type { EligibilityResult, User } from "@shared/schema";
 
 function generateExecutiveSummary(result: EligibilityResult): string {
-  // Check eligibility details for Clean Slate cases
+  // Clean Slate eligibility should be driven by explicit flags to avoid false positives
   const details = result.eligibilityDetails as any;
-  const isCleanSlateEligible = details?.cleanSlateApplicable || 
-    (details?.primaryReason && details.primaryReason.includes("Clean Slate"));
+  const isCleanSlateEligible = !!details?.cleanSlateApplicable;
   
   if (result.automaticExpungement) {
     return "Based on the information you provided, you are eligible for automatic expungement of your marijuana-related conviction under New York's Marihuana Regulation and Taxation Act (MRTA), enacted in 2021. Your conviction should have already been automatically expunged by the state, though verification with the court is recommended to obtain proper documentation.";
@@ -21,10 +20,8 @@ function generateExecutiveSummary(result: EligibilityResult): string {
 function generateStatutoryBasis(result: EligibilityResult, questionnaireData?: any): string {
   let basis = "";
   
-  // Check eligibility details for Clean Slate cases
   const details = result.eligibilityDetails as any;
-  const isCleanSlateEligible = details?.cleanSlateApplicable || 
-    (details?.primaryReason && details.primaryReason.includes("Clean Slate"));
+  const isCleanSlateEligible = !!details?.cleanSlateApplicable;
 
   if (result.automaticExpungement) {
     basis = `Your marijuana-related conviction qualifies for automatic expungement under the Marihuana Regulation and Taxation Act (MRTA), specifically codified in New York Criminal Procedure Law § 160.50(3)(k). This provision mandates automatic expungement of convictions for unlawful possession of marihuana under Penal Law § 221.05, § 221.10, § 221.15, § 221.35, and § 221.40 that occurred prior to March 31, 2021.
@@ -590,10 +587,8 @@ For personalized legal counsel regarding your specific situation, please consult
 }
 
 function getEligibilityStatus(result: EligibilityResult): string {
-  // Check eligibility details for Clean Slate cases
   const details = result.eligibilityDetails as any;
-  const isCleanSlateEligible = details?.cleanSlateApplicable || 
-    (details?.primaryReason && details.primaryReason.includes("Clean Slate"));
+  const isCleanSlateEligible = !!details?.cleanSlateApplicable;
     
   if (result.automaticExpungement) return 'Eligible for Automatic Expungement';
   if (result.automaticSealing || isCleanSlateEligible) return 'Eligible for Automatic Sealing';

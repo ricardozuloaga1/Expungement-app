@@ -295,6 +295,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     next();
   });
 
+  // Debug: Log which authentication middleware is being used
+  console.log("🔍 Auth module has isAuthenticated:", !!authModule.isAuthenticated);
+  console.log("🔍 Auth module keys:", Object.keys(authModule));
+  console.log("🔍 Using fallback middleware:", !authModule.isAuthenticated);
+
   // Auth middleware with error handling
   try {
     await setupAuth(app);
@@ -311,7 +316,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
+      
+      // In development mode, return user from JWT claims directly
+      if (process.env.NODE_ENV === "development" || !process.env.DATABASE_URL) {
+        const user = {
+          id: userId,
+          email: req.user.claims.email,
+          firstName: req.user.claims.first_name,
+          lastName: req.user.claims.last_name,
+          profileImageUrl: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+        return res.json(user);
+      }
+      
+      // Production mode - use storage
+      let user = await storage.getUser(userId);
+      
+      // If user doesn't exist in storage, create it from JWT claims
+      if (!user) {
+        user = await storage.upsertUser({
+          id: userId,
+          email: req.user.claims.email,
+          firstName: req.user.claims.first_name,
+          lastName: req.user.claims.last_name,
+          profileImageUrl: null,
+        });
+      }
+      
       res.json(user);
     } catch (error) {
       console.error("Error fetching user:", error);
@@ -323,16 +356,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/questionnaire', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
+      console.log("Creating questionnaire with userId:", userId);
+      console.log("Request body:", JSON.stringify(req.body, null, 2));
+      
       const validatedData = insertQuestionnaireResponseSchema.parse({
         ...req.body,
         userId,
       });
 
+      console.log("Validated data:", JSON.stringify(validatedData, null, 2));
       const response = await storage.createQuestionnaireResponse(validatedData);
       res.json(response);
     } catch (error) {
       console.error("Error creating questionnaire response:", error);
-      res.status(400).json({ message: "Invalid questionnaire data" });
+      if (error instanceof Error) {
+        console.error("Error details:", error.message);
+        console.error("Error stack:", error.stack);
+      }
+      res.status(400).json({ 
+        message: "Invalid questionnaire data",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
     }
   });
 
@@ -359,11 +403,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/questionnaire/user', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
+      console.log("Fetching questionnaire responses for userId:", userId);
       const responses = await storage.getUserQuestionnaireResponses(userId);
+      console.log("Found responses:", responses.length);
       res.json(responses);
     } catch (error) {
       console.error("Error fetching user questionnaire responses:", error);
-      res.status(500).json({ message: "Failed to fetch questionnaire responses" });
+      if (error instanceof Error) {
+        console.error("Error details:", error.message);
+        console.error("Error stack:", error.stack);
+      }
+      res.status(500).json({ 
+        message: "Failed to fetch questionnaire responses",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
     }
   });
 
@@ -529,11 +582,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/eligibility/user', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
+      console.log("Fetching eligibility results for userId:", userId);
       const results = await storage.getUserEligibilityResults(userId);
+      console.log("Found eligibility results:", results.length);
       res.json(results);
     } catch (error) {
       console.error("Error fetching user eligibility results:", error);
-      res.status(500).json({ message: "Failed to fetch eligibility results" });
+      if (error instanceof Error) {
+        console.error("Error details:", error.message);
+        console.error("Error stack:", error.stack);
+      }
+      res.status(500).json({ 
+        message: "Failed to fetch eligibility results",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
     }
   });
 
@@ -842,7 +904,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Check if OpenAI API key is available
       const apiKey = process.env.OPENAI_API_KEY;
+      console.log('🔍 Chat API Debug:');
+      console.log('API Key exists:', !!apiKey);
+      console.log('API Key length:', apiKey ? apiKey.length : 0);
+      console.log('API Key starts with sk-:', apiKey ? apiKey.startsWith('sk-') : false);
+      
       if (!apiKey || apiKey === 'your-api-key-here') {
+        console.log('🔍 Using demo mode - no valid API key');
         // Fallback response when no API key is configured
         return res.json({
           response: "**Chat Assistant (Demo Mode)**\n\nI'm currently in demo mode. To enable full AI chat functionality, please configure your OpenAI API key.\n\nFor now, here are some key points about NY marijuana expungement:\n\n• **MRTA 2021**: Automatic expungement for possession convictions before March 31, 2021\n• **Clean Slate Act**: Automatic sealing starting November 2024\n• **Petition-Based**: Court petition required for complex cases\n\n*This is general information only, not legal advice. Consult with a qualified attorney for case-specific guidance.*"
@@ -850,9 +918,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Initialize OpenAI
+      console.log('🔍 Initializing OpenAI with API key...');
       const openai = new OpenAI({
         apiKey: apiKey
       });
+      console.log('🔍 OpenAI client created successfully');
 
       // Knowledge base for context
       const knowledgeBase = `
@@ -936,12 +1006,15 @@ User Context: ${JSON.stringify(userContext)}`;
       ];
 
       // Call OpenAI API
+      console.log('🔍 Calling OpenAI API...');
+      console.log('🔍 Messages:', JSON.stringify(messages, null, 2));
       const completion = await openai.chat.completions.create({
         model: 'gpt-3.5-turbo',
         messages: messages as any,
         max_tokens: 500,
         temperature: 0.3, // Lower temperature for more consistent legal information
       });
+      console.log('🔍 OpenAI API call successful');
 
       const response = completion.choices[0]?.message?.content || 
         "I'm sorry, I couldn't generate a response. Please try again.";
@@ -949,6 +1022,9 @@ User Context: ${JSON.stringify(userContext)}`;
       res.json({ response });
     } catch (error) {
       console.error('Chat API error:', error);
+      console.error('Error type:', typeof error);
+      console.error('Error message:', error instanceof Error ? error.message : String(error));
+      console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
       res.status(500).json({ 
         error: 'Failed to process chat request',
         response: "I'm sorry, I'm having trouble responding right now. Please try again later or contact support if the issue persists."

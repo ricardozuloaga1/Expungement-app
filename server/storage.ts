@@ -15,7 +15,6 @@ import {
   type InsertUserProgress,
   type UserProgress,
 } from "../shared/schema";
-import { db as supabaseDb } from "./db";
 import { eq, desc, and } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
@@ -49,7 +48,7 @@ export interface IStorage {
 }
 
 // Mock storage for local development
-const isDevelopment = process.env.NODE_ENV === "development" && (!process.env.DATABASE_URL || process.env.DATABASE_URL?.includes("dummy"));
+const isDevelopment = (!process.env.NODE_ENV || process.env.NODE_ENV === "development") && (!process.env.DATABASE_URL || process.env.DATABASE_URL?.includes("dummy"));
 
 // In-memory storage for development
 const mockData = {
@@ -63,13 +62,23 @@ const mockData = {
 
 let database: any = null;
 
-if (!isDevelopment) {
-  // Use the same database connection from db.ts
-  database = supabaseDb;
+// Lazy initialization of database connection
+async function getDatabase() {
+  if (!database && !isDevelopment) {
+    try {
+      const { db: supabaseDb } = await import("./db");
+      database = supabaseDb;
+    } catch (error) {
+      console.error("Failed to import database:", error);
+      throw new Error("Database not available");
+    }
+  }
+  return database;
 }
 
 export const storage = {
   async upsertUser(user: UpsertUser): Promise<User> {
+    console.log("Storage: upsertUser called, isDevelopment:", isDevelopment);
     if (isDevelopment) {
       const existingUser = mockData.users.get(user.id);
       const newUser: User = {
@@ -82,10 +91,12 @@ export const storage = {
         updatedAt: new Date(),
       };
       mockData.users.set(user.id, newUser);
+      console.log("Storage: Created user in mock storage:", newUser);
       return newUser;
     }
     
-    const [result] = await database
+    const db = await getDatabase();
+    const [result] = await db
       .insert(schema.users)
       .values(user)
       .onConflictDoUpdate({
@@ -107,7 +118,8 @@ export const storage = {
       return mockData.users.get(userId) || null;
     }
     
-    const [user] = await database
+    const db = await getDatabase();
+    const [user] = await db
       .select()
       .from(schema.users)
       .where(eq(schema.users.id, userId))
@@ -116,6 +128,8 @@ export const storage = {
   },
 
   async createQuestionnaireResponse(data: InsertQuestionnaireResponse): Promise<QuestionnaireResponse> {
+    console.log("Storage: createQuestionnaireResponse called, isDevelopment:", isDevelopment);
+    console.log("Storage: Data received:", JSON.stringify(data, null, 2));
     if (isDevelopment) {
       const id = mockData.nextId++;
       const response: QuestionnaireResponse = {
@@ -167,10 +181,12 @@ export const storage = {
         updatedAt: new Date(),
       };
       mockData.questionnaireResponses.set(id, response);
+      console.log("Storage: Created questionnaire response in mock storage:", response);
       return response;
     }
     
-    const [result] = await database
+    const db = await getDatabase();
+    const [result] = await db
       .insert(schema.questionnaireResponses)
       .values(data)
       .returning();
@@ -220,7 +236,8 @@ export const storage = {
       return updated;
     }
     
-    const [result] = await database
+    const db = await getDatabase();
+    const [result] = await db
       .update(schema.questionnaireResponses)
       .set({ ...data, updatedAt: new Date() })
       .where(eq(schema.questionnaireResponses.id, id))
@@ -233,7 +250,8 @@ export const storage = {
       return mockData.questionnaireResponses.get(id) || undefined;
     }
     
-    const [response] = await database
+    const db = await getDatabase();
+    const [response] = await db
       .select()
       .from(schema.questionnaireResponses)
       .where(eq(schema.questionnaireResponses.id, id))
@@ -242,12 +260,16 @@ export const storage = {
   },
 
   async getUserQuestionnaireResponses(userId: string): Promise<QuestionnaireResponse[]> {
+    console.log("Storage: getUserQuestionnaireResponses called for userId:", userId, "isDevelopment:", isDevelopment);
     if (isDevelopment) {
-      return Array.from(mockData.questionnaireResponses.values())
+      const responses = Array.from(mockData.questionnaireResponses.values())
         .filter(response => response.userId === userId);
+      console.log("Storage: Found responses in mock storage:", responses.length);
+      return responses;
     }
     
-    return await database
+    const db = await getDatabase();
+    return await db
       .select()
       .from(schema.questionnaireResponses)
       .where(eq(schema.questionnaireResponses.userId, userId))
@@ -273,7 +295,8 @@ export const storage = {
       return result;
     }
     
-    const [result] = await database
+    const db = await getDatabase();
+    const [result] = await db
       .insert(schema.eligibilityResults)
       .values(data)
       .returning();
@@ -287,7 +310,8 @@ export const storage = {
       return result;
     }
     
-    const [result] = await database
+    const db = await getDatabase();
+    const [result] = await db
       .select()
       .from(schema.eligibilityResults)
       .where(eq(schema.eligibilityResults.id, id))
@@ -301,7 +325,8 @@ export const storage = {
         .filter(result => result.userId === userId);
     }
     
-    return await database
+    const db = await getDatabase();
+    return await db
       .select()
       .from(schema.eligibilityResults)
       .where(eq(schema.eligibilityResults.userId, userId))
@@ -327,7 +352,8 @@ export const storage = {
       return subscription;
     }
     
-    const [result] = await database
+    const db = await getDatabase();
+    const [result] = await db
       .insert(schema.premiumSubscriptions)
       .values(data)
       .returning();
@@ -340,7 +366,8 @@ export const storage = {
         .find(sub => sub.userId === userId && sub.status === "active") || null;
     }
     
-    const [subscription] = await database
+    const db = await getDatabase();
+    const [subscription] = await db
       .select()
       .from(schema.premiumSubscriptions)
       .where(and(
@@ -357,7 +384,8 @@ export const storage = {
       return mockData.userProgress.get(userId) || null;
     }
     
-    const [progress] = await database
+    const db = await getDatabase();
+    const [progress] = await db
       .select()
       .from(schema.userProgress)
       .where(eq(schema.userProgress.userId, userId))
@@ -384,7 +412,8 @@ export const storage = {
       return progress;
     }
     
-    const [result] = await database
+    const db = await getDatabase();
+    const [result] = await db
       .insert(schema.userProgress)
       .values(data)
       .onConflictDoUpdate({

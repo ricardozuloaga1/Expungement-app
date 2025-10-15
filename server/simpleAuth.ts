@@ -122,49 +122,28 @@ export async function setupAuth(app: Express) {
     res.redirect("/");
   });
 
-  // User endpoint - ensures user exists in storage
-  app.get("/api/auth/user", async (req, res) => {
-    try {
-      const token = req.cookies?.auth_token;
-      if (!token) {
-        return res.status(401).json({ message: "Unauthorized" });
-      }
-
-      const decoded = jwt.verify(token, JWT_SECRET) as any;
-      
-      // Import storage here to avoid circular dependency
-      const { storage } = await import("./storage");
-      
-      // Ensure user exists in storage
-      const user = await storage.upsertUser({
-        id: decoded.sub,
-        email: decoded.email,
-        firstName: decoded.first_name,
-        lastName: decoded.last_name,
-        profileImageUrl: null,
-      });
-
-      res.json(user);
-    } catch (error) {
-      res.status(401).json({ message: "Unauthorized" });
-    }
-  });
+  // Note: /api/auth/user endpoint is handled by routes.js with isAuthenticated middleware
 }
 
 export const isAuthenticated: RequestHandler = async (req: any, res, next) => {
   try {
+    console.log("🔍 Auth middleware - cookies:", req.cookies);
     const token = req.cookies?.auth_token;
     if (!token) {
+      console.log("🔍 Auth middleware - no token found");
       return res.status(401).json({ message: "Unauthorized" });
     }
 
+    console.log("🔍 Auth middleware - token found:", token.substring(0, 20) + "...");
     const decoded = jwt.verify(token, JWT_SECRET) as any;
     
     // Check if token is expired
     if (decoded.exp < Math.floor(Date.now() / 1000)) {
+      console.log("🔍 Auth middleware - token expired");
       return res.status(401).json({ message: "Token expired" });
     }
 
+    console.log("🔍 Auth middleware - token valid, user:", decoded.sub);
     // Attach user to request
     req.user = {
       claims: {
@@ -177,6 +156,7 @@ export const isAuthenticated: RequestHandler = async (req: any, res, next) => {
 
     next();
   } catch (error) {
+    console.log("🔍 Auth middleware - error:", error instanceof Error ? error.message : String(error));
     res.status(401).json({ message: "Unauthorized" });
   }
 }; 

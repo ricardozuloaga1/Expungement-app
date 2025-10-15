@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
 import { ChatProvider } from "@/components/chat/chat-context";
 import { ChatWidget } from "@/components/chat/chat-widget";
+import { Footer } from "@/components/footer";
 import Landing from "@/pages/landing";
 import LearnMore from "@/pages/learn-more";
 import Home from "@/pages/home";
@@ -48,7 +49,10 @@ function App() {
       <TooltipProvider>
         <ChatProvider>
           <Toaster />
-          <Router />
+          <div className="min-h-screen flex flex-col">
+            <Router />
+            <Footer />
+          </div>
           <ChatWidget />
         </ChatProvider>
       </TooltipProvider>

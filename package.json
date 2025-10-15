@@ -7,6 +7,8 @@
     "build": "npm run build:client && npm run build:server",
     "build:client": "node build-client.mjs",
     "build:server": "npx tsc --project tsconfig.server.json --outDir dist",
+    "build:netlify": "npm run build && npm run copy:assets",
+    "copy:assets": "cp -r client/public/* dist/public/",
     "start": "node dist/server/index.js",
     "check": "tsc",
     "db:push": "drizzle-kit push"
