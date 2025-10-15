@@ -30,6 +30,8 @@ DATABASE_URL=your-database-url
 STRIPE_SECRET_KEY=your-stripe-key
 ```
 
+**⚠️ Security Note:** Never commit API keys to your repository. Use environment variables only.
+
 ### 3. Deploy
 Click "Deploy site" and wait for the build to complete.
 
