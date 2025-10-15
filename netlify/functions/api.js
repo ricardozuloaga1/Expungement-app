@@ -1,12 +1,16 @@
 // Netlify Functions API handler for all Express routes
 exports.handler = async (event, context) => {
   try {
+    // Hardcode environment variables for testing
+    process.env.OPENAI_API_KEY = process.env.OPENAI_API_KEY || 'sk-proj-your-actual-key-here';
+    process.env.JWT_SECRET = process.env.JWT_SECRET || 'a3442f16bf4e9e337844896ebae27689bf63f9bf615bccb803d2c85a7c4cd9848a474940a1021955fad03b3f3bc7947eb86e793c32255751075e0d6bf7a51b9e';
+    process.env.NODE_ENV = process.env.NODE_ENV || 'production';
+    
     // Debug environment variables
     console.log('🔍 Environment Variables Debug:');
     console.log('OPENAI_API_KEY exists:', !!process.env.OPENAI_API_KEY);
     console.log('JWT_SECRET exists:', !!process.env.JWT_SECRET);
     console.log('NODE_ENV:', process.env.NODE_ENV);
-    console.log('All env vars:', Object.keys(process.env).filter(key => key.includes('OPENAI') || key.includes('JWT') || key.includes('NODE')));
     
     // Add CORS headers
     const headers = {
@@ -35,9 +39,8 @@ exports.handler = async (event, context) => {
           OPENAI_API_KEY: !!process.env.OPENAI_API_KEY,
           JWT_SECRET: !!process.env.JWT_SECRET,
           NODE_ENV: process.env.NODE_ENV,
-          allEnvVars: Object.keys(process.env).filter(key => 
-            key.includes('OPENAI') || key.includes('JWT') || key.includes('NODE')
-          )
+          OPENAI_KEY_PREFIX: process.env.OPENAI_API_KEY ? process.env.OPENAI_API_KEY.substring(0, 10) + '...' : 'NOT_SET',
+          JWT_SECRET_PREFIX: process.env.JWT_SECRET ? process.env.JWT_SECRET.substring(0, 10) + '...' : 'NOT_SET'
         })
       };
     }
