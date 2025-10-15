@@ -26,6 +26,22 @@ exports.handler = async (event, context) => {
       };
     }
 
+    // Test endpoint to check environment variables
+    if (event.path === '/api/test-env') {
+      return {
+        statusCode: 200,
+        headers,
+        body: JSON.stringify({
+          OPENAI_API_KEY: !!process.env.OPENAI_API_KEY,
+          JWT_SECRET: !!process.env.JWT_SECRET,
+          NODE_ENV: process.env.NODE_ENV,
+          allEnvVars: Object.keys(process.env).filter(key => 
+            key.includes('OPENAI') || key.includes('JWT') || key.includes('NODE')
+          )
+        })
+      };
+    }
+
     // Import the Express app handler - the compiled CommonJS has exports.default
     const serverModule = require('../../dist/server/index.js');
     const appHandler = serverModule.default;
