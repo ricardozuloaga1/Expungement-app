@@ -1,6 +1,13 @@
 // Netlify Functions API handler for all Express routes
 exports.handler = async (event, context) => {
   try {
+    // Debug environment variables
+    console.log('🔍 Environment Variables Debug:');
+    console.log('OPENAI_API_KEY exists:', !!process.env.OPENAI_API_KEY);
+    console.log('JWT_SECRET exists:', !!process.env.JWT_SECRET);
+    console.log('NODE_ENV:', process.env.NODE_ENV);
+    console.log('All env vars:', Object.keys(process.env).filter(key => key.includes('OPENAI') || key.includes('JWT') || key.includes('NODE')));
+    
     // Add CORS headers
     const headers = {
       'Access-Control-Allow-Origin': '*',
